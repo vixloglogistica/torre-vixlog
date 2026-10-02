@@ -81,3 +81,9 @@ Para funcionar, o Worker precisa de um **KV** (armazenamento gratuito do Cloudfl
 3. Colar o `proxy/worker.js` novo no Worker (Edit code) e **Deploy**.
 
 A TV consulta a cada 4 s; o aviso aparece em até ~5 s (às vezes o KV demora mais, até ~1 min, no pior caso). Chamadas com mais de 90 s são ignoradas (ex.: TV reiniciada).
+
+## Painel Logístico KPIs (kpi.html)
+- Página própria: `.../kpi.html` — indicadores do mês (total de agendamentos, taxa de concluído, tempo médio de espera, taxa de no-show) comparados ao mês anterior, agendamentos por dia, semana de pico, top clientes e mapa de calor semana × dia. Abas: Visão Geral, Recebimento e Expedição. Setas ◀ ▶ trocam o mês; `?mes=2026-08` abre um mês direto.
+- Na TV do pátio ele entra sozinho a cada 120 s por 24 s (`kpiCadaSeg` / `kpiSeg` no config.js; `kpiCadaSeg: 0` desliga), passando pelas 3 abas. Não entra se houver veículo "se apresentou" ou "aguardando doca" no pátio, e a chamada sempre aparece por cima. Tecla **K** abre/fecha na hora.
+- Precisa do Worker atualizado (rota `/kpi`): colar o `proxy/worker.js` novo e **Deploy**.
+- Regras: concluído % e no-show % são calculados sobre os agendamentos já resolvidos (concluídos + no-show); no-show = não cumprido/não realizado + agendado que passou do dia (ou das 12h, se for hoje). Tempo de espera = chegada → início do recebimento.

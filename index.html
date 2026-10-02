@@ -112,6 +112,7 @@
   #som.mudo{border-color:var(--verm);color:var(--verm);font-weight:800;animation:pisca 1.4s steps(2) infinite}
 
   /* ---------- chamada ---------- */
+  #kpi{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:30;background:var(--bg)}
   #chamada{position:fixed;inset:0;display:none;place-items:center;z-index:50;background:rgba(3,7,18,.9);backdrop-filter:blur(6px)}
   #chamada.on{display:grid}
   .ch{width:88vw;text-align:center;border-radius:2rem;padding:3.4rem 3rem;background:linear-gradient(160deg,#1a3a8f,#0c1c4a 70%);
@@ -150,6 +151,7 @@
   <button id="som" class="mudo" title="Clique para ativar/testar o som">🔇 SOM DESLIGADO — clique</button>
 </footer>
 
+<iframe id="kpi" title="Painel Logístico KPIs" style="display:none"></iframe>
 <div id="chamada"></div>
 <div id="erro"></div>
 
@@ -162,7 +164,7 @@
      ?modo=rec|exp    força o quadro (padrão: automático por horário)
      ?virada=12       hora em que o quadro passa de Recebimento para Expedição
      ?mudo            não toca som
-   Teclas: R = recebimento · E = expedição · A = automático · T = testar chamada
+   Teclas: R = recebimento · E = expedição · A = automático · T = testar chamada · K = painel de KPIs · V = visual
    ===================================================================== */
 const CFG = Object.assign({
   api: '',                 // URL do proxy (Cloudflare Worker)
@@ -172,6 +174,8 @@ const CFG = Object.assign({
   criticoMin: 60,          // há mais de X min → vermelho piscando
   visual: 'quadro',        // 'quadro' (colunas) ou 'painel' (lista estilo aeroporto). Tecla V alterna
   noShowHora: 12,          // Recebimento: agendado que não se apresentou até essa hora vira NO-SHOW (0 = desliga)
+  kpiCadaSeg: 120,         // a cada quantos segundos o painel de KPIs entra na tela (0 = nunca)
+  kpiSeg: 24,              // quanto tempo ele fica (divide entre Visão Geral / Recebimento / Expedição)
   chamar: ['apresentou'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
   maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
@@ -182,6 +186,7 @@ const Q = new URLSearchParams(location.search);
 const DEMO = Q.has('demo');
 if (Q.get('api')) CFG.api = Q.get('api');
 if (Q.get('virada')) CFG.viradaHora = +Q.get('virada');
+if (Q.get('kpicada')) CFG.kpiCadaSeg = +Q.get('kpicada');   // teste: segundos entre as entradas do KPI
 let TOKEN = Q.get('t') || ''; const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 if (TOKEN) lsSet('torre_t', TOKEN); else TOKEN = lsGet('torre_t') || '';
 if (Q.get('t') || Q.get('api')) history.replaceState(null,'',location.pathname + (DEMO?'?demo':'')); // tira o token da barra de endereço
@@ -468,6 +473,31 @@ const TXT_CHAMADA = {
 };
 function chamar(item){ FILA.push(item); if(!EM_TELA) proxima(); }
 
+
+/* ---- rotação: o painel de KPIs entra de tempos em tempos (a chamada sempre fica por cima) ---- */
+let KPI_ON = false, KPI_MANUAL = false, KPI_PROX = Date.now() + (CFG.kpiCadaSeg||0)*1000, KPI_T = [];
+const noPatio = () => DADOS.itens.some(i=>!i.doDiaAnterior && (i.etapa==='apresentou'||i.etapa==='aguardando_doca'));
+function kpiAbrir(manual){
+  if (KPI_ON) return; KPI_ON = true; KPI_MANUAL = !!manual;
+  const f = $('#kpi'); f.src = 'kpi.html?embed'; f.style.display = 'block';
+  const t = (CFG.kpiSeg||24)*1000/3;
+  ['geral','rec','exp'].forEach((a,n)=>KPI_T.push(setTimeout(()=>{ try{ f.contentWindow.postMessage({aba:a},'*'); }catch(e){} }, 1500 + n*t)));
+  if (!manual) KPI_T.push(setTimeout(kpiFechar, (CFG.kpiSeg||24)*1000));
+}
+function kpiFechar(){
+  KPI_T.forEach(clearTimeout); KPI_T = []; KPI_ON = false; KPI_MANUAL = false;
+  const f = $('#kpi'); f.style.display = 'none'; f.removeAttribute('src');
+  KPI_PROX = Date.now() + (CFG.kpiCadaSeg||0)*1000;
+}
+function kpiTick(){
+  if (DEMO || !CFG.api || Q.get('kpi')==='0' || !(CFG.kpiCadaSeg>0) || !ULTIMO_OK) return;
+  if (KPI_ON){ if (!KPI_MANUAL && (noPatio() || EM_TELA)) kpiFechar(); return; }
+  if (Date.now() < KPI_PROX) return;
+  if (noPatio() || EM_TELA || FILA.length){ KPI_PROX = Date.now() + 15000; return; }   // movimento no pátio: adia
+  kpiAbrir(false);
+}
+setInterval(kpiTick, 1000);
+
 /* ---- chamada manual: a equipe aperta CHAMAR na página chamar.html e a TV toca de novo ---- */
 let SEQ_MANUAL = +(lsGet('torre_seq')||0);
 async function ouvirManual(){
@@ -603,7 +633,7 @@ function simular(){
    ===================================================================== */
 document.addEventListener('keydown', e=>{
   const k = e.key.toLowerCase();
-  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
+  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='k'){ KPI_ON ? kpiFechar() : kpiAbrir(true); } else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
   else if (k==='t'){ ativarSom(); const it = (DADOS.itens.find(i=>i.etapa==='apresentou')) || {funil:MODO(),etapa:'apresentou',transportadora:'Transportadora Teste',cliente:'Cliente Teste Ltda',doca:'01',placa:'TST1A23',tipo:'Paletes',qtd:'10'}; chamar(it); }
   relogio();
 });

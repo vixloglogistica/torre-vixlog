@@ -141,6 +141,28 @@ async function tabela(env, nome, desde, ate) {
 }
 const dia = (base, delta) => new Date(base.getTime() + delta * 864e5).toISOString().slice(0, 10);
 
+
+/** Itens compactos de um período (para o painel de KPIs). Exportada para teste. */
+export function transformarKpi(dealTab, ufTab, ini, fim) {
+  const ufPorDeal = new Map(toObjs(ufTab).map((r) => [String(r.DEAL_ID), r]));
+  const itens = [];
+  for (const d of toObjs(dealTab)) {
+    const funil = String(d.CATEGORY_ID) === '5' ? 'rec' : String(d.CATEGORY_ID) === '11' ? 'exp' : null;
+    const etapa = funil ? ETAPAS[d.STAGE_ID] : null;
+    if (!etapa || etapa === 'solicitada') continue;
+    const uf = ufPorDeal.get(String(d.ID)) || {};
+    const chegada = limpa(uf[UF.chegada]);
+    const dataAg = funil === 'rec' ? dataDe(uf[UF.dataAgendada]) : dataDe(chegada) || dataDe(d.DATE_CREATE);
+    if (!dataAg || dataAg < ini || dataAg > fim) continue;
+    itens.push({
+      id: Number(d.ID), f: funil, e: etapa, d: dataAg,
+      c: nomeCliente(d, uf, funil), t: nomeTransportadora(uf[UF.transportadora]),
+      ch: chegada, in: limpa(uf[UF.inicio]), fi: limpa(funil === 'rec' ? uf[UF.fim] : uf[UF.fimExp]),
+    });
+  }
+  return itens;
+}
+
 export default {
   async fetch(req, env, ctx) {
     const cors = {
@@ -169,6 +191,30 @@ export default {
     if (url.pathname.endsWith('/chamada')) {
       if (!env.CHAMADAS) return json({ seq: 0, semKV: true });
       return new Response((await env.CHAMADAS.get('ultima')) || '{"seq":0}', { headers: { ...cors, 'Content-Type': 'application/json' } });
+    }
+
+
+    // ---- KPIs do mês (?mes=AAAA-MM): mês pedido + mês anterior, cache de 10 min ----
+    if (url.pathname.endsWith('/kpi')) {
+      const agora = new Date(), hoje = hojeSP(agora);
+      const mes = /^\d{4}-(0[1-9]|1[0-2])$/.test(url.searchParams.get('mes') || '') ? url.searchParams.get('mes') : hoje.slice(0, 7);
+      const [a, m] = mes.split('-').map(Number);
+      const pad = (n) => String(n).padStart(2, '0');
+      const antes = m === 1 ? `${a - 1}-12` : `${a}-${pad(m - 1)}`;
+      const ultimo = new Date(Date.UTC(a, m, 0)).getUTCDate();
+      const ini = `${antes}-01`, fim = `${mes}-${pad(ultimo)}`;
+      const ckey = new Request(url.origin + '/__kpi_' + mes);
+      let r = await caches.default.match(ckey);
+      if (!r) {
+        try {
+          const d0 = new Date(Date.UTC(+antes.slice(0, 4), +antes.slice(5, 7) - 1, 1) - 35 * 864e5).toISOString().slice(0, 10);
+          const [deals, ufs] = await Promise.all([tabela(env, 'crm_deal', d0, dia(new Date(fim + 'T12:00:00Z'), 1)), tabela(env, 'crm_deal_uf', d0, dia(new Date(fim + 'T12:00:00Z'), 1))]);
+          r = new Response(JSON.stringify({ geradoEm: agora.toISOString(), hoje, mes, antes, itens: transformarKpi(deals, ufs, ini, fim) }),
+            { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=' + (mes === hoje.slice(0, 7) ? 600 : 3600) } });
+          ctx.waitUntil(caches.default.put(ckey, r.clone()));
+        } catch (e) { return json({ erro: String(e.message || e) }, 502); }
+      }
+      return new Response(r.body, { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } });
     }
 
     // cache de 20 s: várias TVs/abas não multiplicam as chamadas ao Bitrix24

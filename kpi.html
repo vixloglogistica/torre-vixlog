@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel Logístico KPIs · Vix Log</title>
+<link rel="icon" href="icone-vixlog.svg">
+<style>
+  :root{--bg:#070d1f;--panel:#0f1a38;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--az:#5b8cff;--ok:#2ecc8f;--am:#ffb020;--vm:#ff4d5e;--lar:#ff7a3d;--rox:#a98bff}
+  *{box-sizing:border-box;margin:0}
+  html{font-size:16px} @media (min-width:1200px){html{font-size:calc(100vw / 120)}}
+  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1rem .8rem}
+  @media (min-width:1200px){body{height:100vh;overflow:hidden}}
+  header{display:flex;align-items:center;gap:1.2rem;height:5rem;flex:none}
+  header img.lg{height:3.6rem} .sep{width:1px;align-self:stretch;margin:.8rem 0;background:var(--linha)}
+  .tit small{display:block;font-size:.95rem;letter-spacing:.2em;color:var(--mut);font-weight:600}
+  .tit strong{font-size:2.1rem;letter-spacing:.04em;font-weight:800}
+  .abas{display:flex;gap:.5rem;margin-left:1.5rem}
+  .abas button{background:var(--panel);color:var(--mut);border:1px solid var(--linha);border-radius:.6rem;padding:.55rem 1.2rem;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit}
+  .abas button.on{background:#14275a;color:#fff;border-color:var(--az)}
+  .mes{margin-left:auto;display:flex;align-items:center;gap:.6rem;font-size:1.3rem;font-weight:700}
+  .mes button{background:var(--panel);border:1px solid var(--linha);color:var(--txt);border-radius:.5rem;width:2.6rem;height:2.6rem;font-size:1.2rem;cursor:pointer}
+  .mes button[disabled]{opacity:.35;cursor:default} .mes span{min-width:11rem;text-align:center;text-transform:capitalize}
+  body.embed .mes button{visibility:hidden}
+  main{flex:1;min-height:0;display:grid;gap:.8rem;grid-template-columns:repeat(4,1fr);grid-template-rows:9.5rem 1fr 1fr;margin-top:.5rem}
+  @media (max-width:1199px){main{grid-template-columns:1fr 1fr;grid-template-rows:none}.wide{grid-column:1/-1}.chart{min-height:16rem}}
+  .box{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;padding:.9rem 1.1rem;display:flex;flex-direction:column;min-height:0;min-width:0;position:relative}
+  .box h3{font-size:.95rem;letter-spacing:.18em;color:var(--mut);font-weight:700;margin-bottom:.5rem;flex:none}
+  .kpi{border-left:.45rem solid var(--c);justify-content:center}
+  .kpi .r{font-size:1rem;letter-spacing:.14em;color:var(--mut);font-weight:700}
+  .kpi .v{font-size:3.6rem;font-weight:800;line-height:1.05}
+  .kpi .s{font-size:.9rem;color:var(--mut)}
+  .kpi .d{position:absolute;right:1rem;bottom:.7rem;font-size:1rem;font-weight:700}
+  .bom{color:var(--ok)} .ruim{color:var(--vm)} .neu{color:var(--mut)}
+  .w2{grid-column:span 3} .w1{grid-column:span 1} .w2b{grid-column:span 2}
+  .dias{flex:1;display:flex;align-items:flex-end;gap:.35rem;min-height:0;padding-top:1.6rem}
+  .dia{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+  .dia .n{font-size:.95rem;font-weight:800;margin-bottom:.15rem} .dia .b{width:78%;background:linear-gradient(#4a6fe0,#27368f);border-radius:.25rem .25rem 0 0;min-height:2px}
+  .dia.fds .b{background:linear-gradient(#8aa0d8,#4a5a9a)} .dia.hj .b{background:linear-gradient(#2ecc8f,#17835a)}
+  .dia .l{font-size:.78rem;color:var(--mut);margin-top:.3rem;text-align:center;line-height:1.1;white-space:nowrap}
+  .pico{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.4rem}
+  .pico .big{font-size:3.4rem;font-weight:800;color:var(--lar);line-height:1}
+  .pico .k{font-size:1.9rem;font-weight:800} .pico .t{font-size:.9rem;color:var(--mut)} .pico .dd{font-size:2.4rem;font-weight:800;color:var(--lar)}
+  .top{flex:1;display:flex;align-items:flex-end;gap:.7rem;min-height:0;padding-top:1.4rem}
+  .top .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}
+  .top .n{font-weight:800;font-size:1.1rem;margin-bottom:.2rem} .top .b{width:70%;background:linear-gradient(#4a6fe0,#27368f);border-radius:.25rem .25rem 0 0}
+  .top .l{font-size:.78rem;color:#c5d2f5;text-align:center;margin-top:.35rem;line-height:1.15;height:3.6em;overflow:hidden;overflow-wrap:anywhere;text-transform:uppercase}
+  table{border-collapse:collapse;width:100%;font-size:1rem;flex:1}
+  th{background:#14275a;font-size:.9rem;padding:.3rem .4rem;font-weight:700} td{text-align:center;padding:.25rem .4rem;border:1px solid rgba(39,57,107,.6);font-weight:700}
+  td.sem,th.sem{text-align:left;color:var(--mut)} td.tot{background:#14275a} tr.ft td{background:#14275a}
+  .vazio{margin:auto;color:var(--mut);font-size:1.1rem;opacity:.7}
+  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--vm);color:#ffb3bb;padding:.7rem 1rem;border-radius:.7rem;display:none;max-width:92vw;z-index:5}
+  #carga{position:fixed;inset:0;display:grid;place-items:center;color:var(--mut);letter-spacing:.2em;background:var(--bg);z-index:4}
+</style>
+</head>
+<body>
+<header>
+  <img class="lg" src="logo-vixlog.svg" alt="Vix Log"><div class="sep"></div>
+  <div class="tit"><small>INDICADORES</small><strong>PAINEL LOGÍSTICO KPIs</strong></div>
+  <nav class="abas" id="abas">
+    <button data-a="geral" class="on">Visão Geral</button><button data-a="rec">Recebimento</button><button data-a="exp">Expedição</button>
+  </nav>
+  <div class="mes"><button id="ant" title="Mês anterior">◀</button><span id="mes">—</span><button id="prox" title="Próximo mês">▶</button></div>
+</header>
+<main id="m"></main>
+<div id="carga">CARREGANDO…</div><div id="erro"></div>
+<script src="config.js"></script>
+<script>
+/* ===== Painel Logístico KPIs — lê /kpi?mes=AAAA-MM do Worker e calcula tudo aqui ===== */
+const CFG = Object.assign({api:'', noShowHora:12}, window.TORRE_CONFIG||{});
+const Q = new URLSearchParams(location.search), EMBED = Q.has('embed');
+if (EMBED) document.body.classList.add('embed');
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let TOKEN = Q.get('t') || ''; if (TOKEN) lsSet('torre_t', TOKEN); else TOKEN = lsGet('torre_t') || '';
+const $ = s => document.querySelector(s), esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DSEM = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+const hojeSP = () => new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo'}).format(new Date());
+const horaSP = () => +new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',hour12:false}).format(new Date()) % 24;
+const quando = s => s ? new Date(String(s).replace(' ','T')+'-03:00') : null;
+const dur = min => min==null ? '—' : (min>=60 ? `${Math.floor(min/60)}h${String(Math.round(min%60)).padStart(2,'0')}` : `${Math.round(min)} min`);
+const wd = iso => (new Date(iso+'T12:00:00Z').getUTCDay()+6)%7;           // 0=SEG … 6=DOM
+
+let MES = Q.get('mes') || hojeSP().slice(0,7), ABA = Q.get('aba') || 'geral', DADOS = null;
+
+/* ----- status efetivo de cada item (mesma regra do Controle de Pátio) ----- */
+function status(i, hoje){
+  if (i.e==='concluido') return 'ok';
+  if (i.e==='nao_realizado' || i.e==='nao_cumprido') return 'ns';
+  if (i.e==='agendado' && i.f==='rec'){
+    if (i.d < hoje) return 'ns';
+    if (i.d === hoje) return (CFG.noShowHora>0 && horaSP()>=CFG.noShowHora) ? 'ns' : 'pend';
+    return 'pend';
+  }
+  return 'and';                                   // apresentou / aguardando doca / em andamento
+}
+function calc(itens, hoje){
+  const its = itens.filter(i=>i.e!=='incorreto');
+  const st = its.map(i=>status(i,hoje));
+  const ok = st.filter(s=>s==='ok').length, ns = st.filter(s=>s==='ns').length, base = ok+ns;
+  const esp = [], cic = [];
+  its.forEach(i=>{
+    const a=quando(i.ch), b=quando(i.in), c=quando(i.fi);
+    if (a&&b&&b>a) esp.push((b-a)/60000);
+    if (a&&c&&c>a) cic.push((c-a)/60000);
+  });
+  const med = v => v.length ? v.reduce((s,x)=>s+x,0)/v.length : null;
+  return {total:its.length, ok, ns, taxaOk: base?100*ok/base:null, taxaNs: base?100*ns/base:null, espera:med(esp), ciclo:med(cic),
+          clientes:new Set(its.map(i=>i.c)).size, its};
+}
+function delta(a, b, tipo, melhorSobe){                       // tipo: 'pct' (variação %) | 'pp' (pontos)
+  if (a==null || b==null || (tipo==='pct' && b===0)) return '';
+  const v = tipo==='pp' ? a-b : 100*(a-b)/b, r = Math.round(Math.abs(v));
+  const cls = r===0 ? 'neu' : ((v>0)===melhorSobe ? 'bom' : 'ruim'), seta = r===0 ? '■' : (v>0?'▲':'▼');
+  return `<span class="d ${cls}">${seta} ${String(r).padStart(2,'0')}${tipo==='pp'?' pp':'%'} vs mês anterior</span>`;
+}
+
+/* ----- desenho ----- */
+function desenhar(){
+  if (!DADOS) return;
+  const hoje = DADOS.hoje, [A,M] = MES.split('-').map(Number), atual = MES===hoje.slice(0,7);
+  const corteDia = atual ? +hoje.slice(8,10) : 99;                // compara com o mesmo trecho do mês anterior
+  const filtro = i => ABA==='geral' ? true : i.f===ABA;
+  const cur  = DADOS.itens.filter(i=>i.d.startsWith(MES) && filtro(i));
+  const prev = DADOS.itens.filter(i=>i.d.startsWith(DADOS.antes) && +i.d.slice(8,10)<=corteDia && filtro(i));
+  const k = calc(cur,hoje), p = calc(prev,hoje);
+  $('#mes').textContent = `${MESES[M-1]} ${A}`;
+  $('#prox').disabled = atual; document.querySelectorAll('#abas button').forEach(b=>b.classList.toggle('on', b.dataset.a===ABA));
+
+  // indicadores do topo
+  const exp = ABA==='exp';
+  const cards = [
+    ['TOTAL DE AGENDAMENTOS', k.total, exp?'veículos atendidos':'previstos no mês', delta(k.total,p.total,'pct',true), 'var(--az)'],
+    ['TAXA CONCLUÍDO', k.taxaOk==null?'—':Math.round(k.taxaOk)+'%', `${k.ok} concluídos`, delta(k.taxaOk,p.taxaOk,'pp',true), 'var(--ok)'],
+    exp ? ['TEMPO MÉD. ATENDIMENTO', dur(k.ciclo), 'chegada → fim', delta(k.ciclo,p.ciclo,'pct',false), 'var(--am)']
+        : ['TEMPO MÉD. AGUARDAR', dur(k.espera), 'chegada → início', delta(k.espera,p.espera,'pct',false), 'var(--am)'],
+    exp ? ['CLIENTES ATENDIDOS', k.clientes, 'no mês', delta(k.clientes,p.clientes,'pct',true), 'var(--rox)']
+        : ['TAXA NO-SHOW', k.taxaNs==null?'—':Math.round(k.taxaNs)+'%', `${k.ns} no-show`, delta(k.taxaNs,p.taxaNs,'pp',false), 'var(--vm)'],
+  ].map(([r,v,s,d,c])=>`<div class="box kpi" style="--c:${c}"><span class="r">${r}</span><span class="v">${v}</span><span class="s">${s}</span>${d}</div>`).join('');
+
+  // dias do mês
+  const nd = new Date(Date.UTC(A,M,0)).getUTCDate(), porDia = Array(nd+1).fill(0);
+  k.its.forEach(i=>{ porDia[+i.d.slice(8,10)]++; });
+  const max = Math.max(1,...porDia);
+  let dias = '';
+  for (let d=1; d<=nd; d++){
+    const iso = `${MES}-${String(d).padStart(2,'0')}`, w = wd(iso), fds = w>=5;
+    if (fds && !porDia[d]) continue;
+    dias += `<div class="dia ${fds?'fds':''} ${iso===hoje?'hj':''}"><span class="n">${porDia[d]||''}</span><div class="b" style="height:${100*porDia[d]/max*0.82}%"></div><span class="l">${DSEM[w]}<br>${String(d).padStart(2,'0')}</span></div>`;
+  }
+
+  // semanas × dias (semana 1 = a que contém o dia 1; sábado/domingo na linha "Fim de semana")
+  const w1 = wd(`${MES}-01`), sem = {}, fim = Array(7).fill(0), tot = Array(7).fill(0);
+  for (let d=1; d<=nd; d++){
+    const n = porDia[d]; if(!n) continue; const w = wd(`${MES}-${String(d).padStart(2,'0')}`), s = Math.ceil((d+w1)/7);
+    if (w>=5){ fim[w]+=n; } else { (sem[s] ||= Array(7).fill(0))[w]+=n; }
+    tot[w]+=n;
+  }
+  const semanas = Object.keys(sem).map(Number).sort((a,b)=>a-b), totSem = s => sem[s].reduce((a,b)=>a+b,0);
+  const picoS = semanas.reduce((m,s)=>totSem(s)>(m?totSem(m):-1)?s:m, null);
+  let diaPico = 0; for (let d=1; d<=nd; d++) if (porDia[d]>porDia[diaPico]) diaPico=d;
+  const mx = Math.max(1,...semanas.flatMap(s=>sem[s]),...fim);
+  const cel = n => n ? `<td style="background:rgba(255,${Math.round(170-60*n/mx)},50,${.18+.62*n/mx});color:#fff">${n}</td>` : '<td></td>';
+  const tabela = `<table><tr><th class="sem">Semana</th>${DSEM.slice(0,6).map(x=>`<th>${x}</th>`).join('')}<th>Total</th></tr>` +
+    semanas.map(s=>`<tr><td class="sem">Semana ${s}</td>${sem[s].slice(0,5).map(cel).join('')}<td></td><td class="tot">${totSem(s)}</td></tr>`).join('') +
+    (fim[5]+fim[6] ? `<tr><td class="sem">Fim de semana</td><td></td><td></td><td></td><td></td><td></td>${cel(fim[5])}<td class="tot">${fim[5]+fim[6]}</td></tr>` : '') +
+    `<tr class="ft"><td class="sem">Total</td>${tot.slice(0,6).map(x=>`<td>${x||''}</td>`).join('')}<td>${k.total}</td></tr></table>`;
+
+  // top clientes
+  const cc = {}; k.its.forEach(i=>{ const n=(i.c||'—').replace(/\b(LTDA|EIRELI|S\.?\/?A\.?|ME|EPP)\b\.?/gi,'').replace(/\s+/g,' ').trim(); cc[n]=(cc[n]||0)+1; });
+  const top = Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,5), tmax = top.length?top[0][1]:1;
+
+  $('#m').innerHTML = cards +
+    `<div class="box chart w2"><h3>AGENDAMENTOS POR DIA</h3>${k.total?`<div class="dias">${dias}</div>`:'<div class="vazio">sem dados neste mês</div>'}</div>
+     <div class="box w1"><h3>SEMANA DE PICO</h3>${picoS?`<div class="pico"><div class="big">Semana ${picoS}</div><div><span class="k">${totSem(picoS)}</span><div class="t">Pico da semana (valor)</div></div>
+       <div><span class="dd">${DSEM[wd(`${MES}-${String(diaPico).padStart(2,'0')}`)]} ${String(diaPico).padStart(2,'0')}</span> <span class="k">${porDia[diaPico]}</span><div class="t">Dia de maior volume</div></div></div>`:'<div class="vazio">—</div>'}</div>
+     <div class="box chart w2b"><h3>TOP CLIENTES POR AGENDAMENTO</h3>${top.length?`<div class="top">${top.map(([n,v])=>`<div class="c"><span class="n">${v}</span><div class="b" style="height:${100*v/tmax*.7}%"></div><span class="l">${esc(n)}</span></div>`).join('')}</div>`:'<div class="vazio">—</div>'}</div>
+     <div class="box w2b"><h3>AGENDAMENTOS POR SEMANA × DIA</h3>${k.total?tabela:'<div class="vazio">—</div>'}</div>`;
+  $('#carga').style.display='none';
+}
+
+/* ----- dados ----- */
+async function carregar(){
+  try{
+    if (!CFG.api) throw new Error('Falta o endereço do proxy (config.js).');
+    const r = await fetch(`${CFG.api.replace(/\/$/,'')}/kpi?mes=${MES}&t=${encodeURIComponent(TOKEN)}`, {cache:'no-store'});
+    if (r.status===401) throw new Error('Token inválido — abra com ?t=SEU_TOKEN');
+    if (!r.ok){ const e = await r.json().catch(()=>({})); throw new Error(e.erro || ('Erro '+r.status)); }
+    DADOS = await r.json(); $('#erro').style.display='none'; desenhar();
+  }catch(e){ $('#erro').textContent='⚠ '+(e.message||e); $('#erro').style.display='block'; $('#carga').style.display='none'; }
+}
+const muda = n => { const [a,m]=MES.split('-').map(Number), d=new Date(Date.UTC(a,m-1+n,1)); MES=d.toISOString().slice(0,7); DADOS=null; $('#carga').style.display='grid'; carregar(); };
+$('#ant').onclick = ()=>muda(-1); $('#prox').onclick = ()=>{ if(MES<hojeSP().slice(0,7)) muda(1); };
+document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>{ ABA=b.dataset.a; desenhar(); });
+if (EMBED) document.querySelector('.abas').style.pointerEvents='none';
+window.addEventListener('message', e=>{ if(e.data && e.data.aba){ ABA=e.data.aba; desenhar(); } });   // a TV troca a aba por aqui
+carregar(); setInterval(carregar, 5*60*1000);
+</script>
+</body></html>
