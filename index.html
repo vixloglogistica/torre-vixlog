@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Torre de Controle Vix Log</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5bd8'/%3E%3Cpath d='M7 9l9 15 9-15' fill='none' stroke='white' stroke-width='3.4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="icone-vixlog.svg">
 <style>
   :root{
     --bg:#070d1f; --panel:#0e1832; --card:#16244a; --card2:#1b2c58; --linha:#27396b;
@@ -20,8 +20,7 @@
   /* ---------- topo ---------- */
   header{display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
   .marca{display:flex;align-items:center;gap:1rem}
-  .logo{font-weight:800;letter-spacing:.18em;font-size:2.1rem;color:#fff}
-  .logo b{color:var(--azul)}
+  .logo img{height:3.7rem;width:auto;display:block}
   .titulo{border-left:2px solid var(--linha);padding-left:1rem;line-height:1.25}
   .titulo small{display:block;font-size:.95rem;letter-spacing:.2em;color:var(--mut);font-weight:600}
   .titulo strong{font-size:2rem;letter-spacing:.06em;font-weight:800}
@@ -106,7 +105,7 @@
 
 <header>
   <div class="marca">
-    <div class="logo">VIX<b>LOG</b></div>
+    <div class="logo"><img src="logo-vixlog.svg" alt="Vix Log - Operador Logístico"></div>
     <div class="titulo"><small>TORRE DE CONTROLE</small><strong id="tit">RECEBIMENTO</strong><span id="modo" class="modo rec">MANHÃ</span></div>
   </div>
   <div class="relogio">
