@@ -273,10 +273,11 @@ function montar(modo){
 
 function filtrar(modo){
   const passou = CFG.noShowHora > 0 && horaSP() >= CFG.noShowHora;
-  return DADOS.itens.filter(i=>i.funil===modo).map(i=>{
+  // "Não realizado" e "Incorreto" = agendamento incorreto: não entram no painel nem nas contas
+  return DADOS.itens.filter(i=>i.funil===modo && i.etapa!=='nao_realizado' && i.etapa!=='incorreto').map(i=>{
     // Recebimento: ainda "agendado" depois do horário-limite (ou de um dia anterior) = não compareceu
     if (modo==='rec' && i.etapa==='agendado' && (i.doDiaAnterior || passou)) return Object.assign({}, i, {etapa:'nao_compareceu'});
-    if (i.etapa==='nao_cumprido' || i.etapa==='nao_realizado') return Object.assign({}, i, {etapa:'nao_compareceu'});
+    if (i.etapa==='nao_cumprido') return Object.assign({}, i, {etapa:'nao_compareceu'});
     return i;
   });
 }

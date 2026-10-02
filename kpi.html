@@ -86,7 +86,7 @@ let MES = Q.get('mes') || hojeSP().slice(0,7), ABA = Q.get('aba') || 'geral', DA
 /* ----- status efetivo de cada item (mesma regra do Controle de Pátio) ----- */
 function status(i, hoje){
   if (i.e==='concluido') return 'ok';
-  if (i.e==='nao_realizado' || i.e==='nao_cumprido') return 'ns';
+  if (i.e==='nao_cumprido') return 'ns';
   if (i.e==='agendado' && i.f==='rec'){
     if (i.d < hoje) return 'ns';
     if (i.d === hoje) return (CFG.noShowHora>0 && horaSP()>=CFG.noShowHora) ? 'ns' : 'pend';
@@ -95,7 +95,7 @@ function status(i, hoje){
   return 'and';                                   // apresentou / aguardando doca / em andamento
 }
 function calc(itens, hoje){
-  const its = itens.filter(i=>i.e!=='incorreto');
+  const its = itens.filter(i=>i.e!=='incorreto' && i.e!=='nao_realizado');   // agendamento incorreto não conta
   const st = its.map(i=>status(i,hoje));
   const ok = st.filter(s=>s==='ok').length, ns = st.filter(s=>s==='ns').length, base = ok+ns;
   const esp = [], cic = [];
