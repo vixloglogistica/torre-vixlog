@@ -594,7 +594,7 @@ function proxima(){
       <div class="e">${esc(TXT_CHAMADA[i.etapa](q))}</div>
       <div class="tr">${esc(transp)}</div>
       <div class="cl">${esc(curto(i.cliente)||bonito(i.cliente))}</div>
-      <div class="ib">${/cross/i.test(i.operacao||'')?`<span class="cross">CROSSDOCKING</span>`:''}${i.doca&&!/cross/i.test(i.operacao||'')?`<span class="doca">DOCA ${esc(i.doca)}</span>`:''}${i.placa?`<span>${esc(i.placa)}</span>`:''}${qt?`<span>${esc(qt)}</span>`:''}</div>
+      <div class="ib">${/cross/i.test(i.operacao||'')?`<span class="cross">CROSSDOCKING</span>`:''}${i.doca&&i.etapa==='em_andamento'&&!/cross/i.test(i.operacao||'')?`<span class="doca">DOCA ${esc(i.doca)}</span>`:''}${i.placa?`<span>${esc(i.placa)}</span>`:''}${qt?`<span>${esc(qt)}</span>`:''}</div>
       ${FILA.length?`<div class="fila">+ ${FILA.length} na fila de chamada</div>`:''}</div>`;
   box.classList.add('on');
   campainha();
