@@ -168,6 +168,7 @@ const CFG = Object.assign({
   atencaoMin: 30,          // veículo esperando há mais de X min → amarelo
   criticoMin: 60,          // há mais de X min → vermelho piscando
   visual: 'quadro',        // 'quadro' (colunas) ou 'painel' (lista estilo aeroporto). Tecla V alterna
+  noShowHora: 12,          // Recebimento: agendado que não se apresentou até essa hora vira NÃO COMPARECEU (0 = desliga)
   chamar: ['apresentou'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
   maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
@@ -189,11 +190,12 @@ const ETAPA = {
   aguardando_doca: {nome:'AGUARDANDO DOCA',     cor:'#ff7a3d'},
   em_andamento:    {nome:'EM RECEBIMENTO',      cor:'#a98bff'},
   concluido:       {nome:'RECEBIMENTO CONCLUÍDO', cor:'#2ecc8f'},
+  nao_compareceu:  {nome:'NÃO COMPARECEU',      cor:'#ff4d5e'},
 };
 const QUADROS = {
   rec: { titulo:'RECEBIMENTO', rotulo:'MANHÃ', verbo:'recebimento',
-         colunas:['agendado','apresentou','aguardando_doca','em_andamento','concluido'], grid:'1.05fr 1fr 1fr 1fr .85fr',
-         nomes:{em_andamento:'EM RECEBIMENTO',concluido:'CONCLUÍDOS'} },
+         colunas:['agendado','apresentou','aguardando_doca','em_andamento','concluido','nao_compareceu'], grid:'1fr 1fr 1fr 1fr .85fr .8fr',
+         nomes:{em_andamento:'EM RECEBIMENTO',concluido:'CONCLUÍDOS',nao_compareceu:'NÃO VIERAM'} },
   exp: { titulo:'EXPEDIÇÃO', rotulo:'TARDE', verbo:'expedição',
          colunas:['apresentou','aguardando_doca','em_andamento','concluido'], grid:'1fr 1fr 1fr .9fr',
          nomes:{em_andamento:'EM EXPEDIÇÃO',concluido:'CONCLUÍDAS'} },
@@ -261,7 +263,15 @@ function montar(modo){
   desenhar();
 }
 
-function filtrar(modo){ return DADOS.itens.filter(i=>i.funil===modo); }
+function filtrar(modo){
+  const passou = CFG.noShowHora > 0 && horaSP() >= CFG.noShowHora;
+  return DADOS.itens.filter(i=>i.funil===modo).map(i=>{
+    // Recebimento: ainda "agendado" depois do horário-limite (ou de um dia anterior) = não compareceu
+    if (modo==='rec' && i.etapa==='agendado' && (i.doDiaAnterior || passou)) return Object.assign({}, i, {etapa:'nao_compareceu'});
+    if (i.etapa==='nao_cumprido' || i.etapa==='nao_realizado') return Object.assign({}, i, {etapa:'nao_compareceu'});
+    return i;
+  });
+}
 
 function cartao(i, k){
   const cor = ETAPA[k].cor;
@@ -285,7 +295,7 @@ function cartao(i, k){
     extra = i.obs ? `<span>${esc(i.obs.slice(0,34))}</span>` : '';
   }
   const doca = i.doca ? `<span class="chip doca">DOCA ${esc(i.doca)}</span>` : '';
-  const placa = (i.placa && k!=='concluido' && k!=='agendado') ? `<span class="placa">${esc(i.placa)}</span>` : '';
+  const placa = i.placa ? `<span class="placa">${esc(i.placa)}</span>` : '';
   return `<div class="card ${i.doDiaAnterior?'ontem':''}" style="--c:${cor}" data-id="${i.id}-${k}">
       <div class="t"><span class="tr">${esc(transp)}</span>${topo}</div>
       <div class="cl">${esc(cli)}</div>
@@ -319,7 +329,7 @@ const tiles = (txt, n, cls='') => {
   return `<span class="fl ${cls}">` + [...t].map((c,k)=>`<i style="--k:${k}">${c===' '?'&nbsp;':esc(c)}</i>`).join('') + '</span>';
 };
 function painel(modo, itens){
-  const ordem = ['apresentou','aguardando_doca','em_andamento','agendado','concluido'];
+  const ordem = ['apresentou','aguardando_doca','em_andamento','agendado','nao_compareceu','concluido'];
   const rank = k => ordem.indexOf(k);
   const lista = itens.filter(i=>rank(i.etapa)>=0).sort((a,b)=>{
     const d = rank(a.etapa)-rank(b.etapa); if (d) return d;
@@ -328,7 +338,7 @@ function painel(modo, itens){
   });
   const concl = lista.filter(i=>i.etapa==='concluido'), outros = lista.filter(i=>i.etapa!=='concluido');
   const vis = outros.concat(concl.slice(0,8));
-  const nomeEtapa = {apresentou:'VEÍCULO SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
+  const nomeEtapa = {apresentou:'VEÍCULO SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',nao_compareceu:'NÃO COMPARECEU',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
   const html = vis.map(i=>{
     const k = i.etapa, cor = ETAPA[k].cor;
     const sig = [k,i.transportadora,i.cliente,i.placa,i.doca,i.chegada].join('|');
@@ -341,10 +351,10 @@ function painel(modo, itens){
     const tcell = desde ? `<span class="tmp" data-desde="${desde}"></span>` : `<span class="tmp">${tiles(tempo,7,'t '+flip)}</span>`;
     const cli = curto(i.cliente)||bonito(i.cliente);
     return `<div class="row ${k==='concluido'?'fim':''}" style="--c:${cor}">
-      <span class="stt">${nomeEtapa[k]}</span>
+      <span class="stt">${k==='nao_compareceu'&&i.chegada?'NÃO CUMPRIDO':nomeEtapa[k]}</span>
       ${tiles(bonito(i.transportadora)||'A DEFINIR',19,flip)}
       ${tiles(cli,28,'m '+flip)}
-      ${tiles(k==='agendado'||k==='concluido'?'':i.placa,7,'p '+flip)}
+      ${tiles(i.placa,8,'p '+flip)}
       ${tiles(i.doca?('0'+i.doca).slice(-2):'',2,'d '+flip)}
       ${tiles(hhmm(i.chegada),5,'t '+flip)}
       ${tcell}</div>`;
@@ -358,10 +368,10 @@ function kpis(modo, itens){
   const concl = itens.filter(i=>i.etapa==='concluido');
   const ciclos = concl.map(i=>{const a=quando(i.chegada),b=quando(i.fim);return a&&b&&b>a?b-a:null}).filter(Boolean);
   const medio = ciclos.length ? dur(ciclos.reduce((s,x)=>s+x,0)/ciclos.length) : '—';
-  const naoCump = n('nao_cumprido') + n('nao_realizado');
+  const naoCump = n('nao_compareceu');
   let t;
   if (modo==='rec'){
-    const total = itens.filter(i=>!['incorreto','nao_realizado'].includes(i.etapa)).length;
+    const total = itens.filter(i=>i.etapa!=='incorreto').length;
     const pct = total ? Math.round(100*concl.length/total) : 0;
     t = [
       ['TOTAL DO DIA', total, '', '#5b8cff'],

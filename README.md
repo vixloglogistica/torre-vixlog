@@ -67,3 +67,7 @@ Os campos personalizados chegam do BI só com código. Eu deduzi o significado p
 - A chave do BI aparece nos prints enviados e na conversa. Depois de colocar tudo no ar, **gere uma chave nova** no Bitrix24 (Análise do CRM → Microsoft Power BI) e atualize o `BX_KEY` no Worker. O Power BI antigo deixa de atualizar com a chave velha, então faça isso quando for desligá-lo.
 - O token (`?t=`) só impede curiosos de ler os dados pelo Worker; ele aparece no atalho da TV, então não o divulgue.
 - O Worker consulta o Bitrix24 no máximo 1 vez a cada 20 s, não importa quantas TVs estejam abertas.
+
+
+## Não compareceu (automático)
+No Recebimento, quem continua **Agendado** depois das 12h (`noShowHora` no config.js; 0 desliga) aparece como **NÃO COMPARECEU**, sem precisar mover o card no Bitrix24. Se o carro chegar depois, o card volta para o fluxo normal. Cards nas etapas "Não cumprido"/"Não realizado" do Bitrix24 também entram nesse grupo (com chegada registrada, aparecem como NÃO CUMPRIDO no painel).
