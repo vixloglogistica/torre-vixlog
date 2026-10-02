@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Torre de Controle Vix Log</title>
+<title>Controle de Pátio Vix Log</title>
 <link rel="icon" type="image/svg+xml" href="icone-vixlog.svg">
 <style>
   :root{
@@ -130,7 +130,7 @@
 <header>
   <div class="marca">
     <div class="logo"><img src="logo-vixlog.svg" alt="Vix Log - Operador Logístico"></div>
-    <div class="titulo"><small>TORRE DE CONTROLE</small><strong id="tit">RECEBIMENTO</strong><span id="modo" class="modo rec">MANHÃ</span></div>
+    <div class="titulo"><small>CONTROLE DE PÁTIO</small><strong id="tit">RECEBIMENTO</strong><span id="modo" class="modo rec">MANHÃ</span></div>
   </div>
   <div class="relogio">
     <div class="data"><div class="d1" id="d1"></div><div class="d2" id="d2"></div></div>
@@ -168,7 +168,7 @@ const CFG = Object.assign({
   atencaoMin: 30,          // veículo esperando há mais de X min → amarelo
   criticoMin: 60,          // há mais de X min → vermelho piscando
   visual: 'quadro',        // 'quadro' (colunas) ou 'painel' (lista estilo aeroporto). Tecla V alterna
-  noShowHora: 12,          // Recebimento: agendado que não se apresentou até essa hora vira NÃO COMPARECEU (0 = desliga)
+  noShowHora: 12,          // Recebimento: agendado que não se apresentou até essa hora vira NO-SHOW (0 = desliga)
   chamar: ['apresentou'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
   maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
@@ -190,12 +190,12 @@ const ETAPA = {
   aguardando_doca: {nome:'AGUARDANDO DOCA',     cor:'#ff7a3d'},
   em_andamento:    {nome:'EM RECEBIMENTO',      cor:'#a98bff'},
   concluido:       {nome:'RECEBIMENTO CONCLUÍDO', cor:'#2ecc8f'},
-  nao_compareceu:  {nome:'NÃO COMPARECEU',      cor:'#ff4d5e'},
+  nao_compareceu:  {nome:'NO-SHOW',            cor:'#ff4d5e'},
 };
 const QUADROS = {
   rec: { titulo:'RECEBIMENTO', rotulo:'MANHÃ', verbo:'recebimento',
          colunas:['agendado','apresentou','aguardando_doca','em_andamento','concluido','nao_compareceu'], grid:'1fr 1fr 1fr 1fr .85fr .8fr',
-         nomes:{em_andamento:'EM RECEBIMENTO',concluido:'CONCLUÍDOS',nao_compareceu:'NÃO VIERAM'} },
+         nomes:{em_andamento:'EM RECEBIMENTO',concluido:'CONCLUÍDOS',nao_compareceu:'NO-SHOW'} },
   exp: { titulo:'EXPEDIÇÃO', rotulo:'TARDE', verbo:'expedição',
          colunas:['apresentou','aguardando_doca','em_andamento','concluido'], grid:'1fr 1fr 1fr .9fr',
          nomes:{em_andamento:'EM EXPEDIÇÃO',concluido:'CONCLUÍDAS'} },
@@ -246,7 +246,7 @@ function relogio(){
 function montar(modo){
   MODO_ATUAL = modo; const q = QUADROS[modo];
   $('#tit').textContent = q.titulo; const m = $('#modo'); m.textContent = q.rotulo; m.className = 'modo ' + modo;
-  document.title = 'Torre de Controle · ' + q.titulo;
+  document.title = 'Controle de Pátio · ' + q.titulo;
   const quadro = $('#quadro');
   if (ESTILO === 'painel'){
     quadro.style.gridTemplateColumns = '1fr'; PREV.clear();
@@ -338,7 +338,7 @@ function painel(modo, itens){
   });
   const concl = lista.filter(i=>i.etapa==='concluido'), outros = lista.filter(i=>i.etapa!=='concluido');
   const vis = outros.concat(concl);
-  const nomeEtapa = {apresentou:'VEÍCULO SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',nao_compareceu:'NÃO COMPARECEU',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
+  const nomeEtapa = {apresentou:'VEÍCULO SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',nao_compareceu:'NO-SHOW',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
   const html = vis.map(i=>{
     const k = i.etapa, cor = ETAPA[k].cor;
     const sig = [k,i.transportadora,i.cliente,i.placa,i.doca,i.chegada].join('|');
@@ -381,7 +381,7 @@ function kpis(modo, itens){
       ['NO PÁTIO', n('apresentou')+n('aguardando_doca'), '', '#ffb020'],
       ['EM RECEBIMENTO', n('em_andamento'), '', '#a98bff'],
       ['CONCLUÍDOS', concl.length, `<small>${pct}%</small>`, '#2ecc8f'],
-      ['NÃO COMPARECERAM', naoCump, '', naoCump? '#ff4d5e':'#8fa1cc'],
+      ['NO-SHOW', naoCump, '', naoCump? '#ff4d5e':'#8fa1cc'],
     ];
   } else {
     const total = itens.length;
@@ -588,7 +588,7 @@ document.addEventListener('keydown', e=>{
   else if (k==='t'){ ativarSom(); const it = (DADOS.itens.find(i=>i.etapa==='apresentou')) || {funil:MODO(),etapa:'apresentou',transportadora:'Transportadora Teste',cliente:'Cliente Teste Ltda',doca:'01',placa:'TST1A23',tipo:'Paletes',qtd:'10'}; chamar(it); }
   relogio();
 });
-$('#som').addEventListener('click', ()=>{ ativarSom(); if(SOM_OK){ campainha(); falar('Som da torre de controle ativo.'); } });
+$('#som').addEventListener('click', ()=>{ ativarSom(); if(SOM_OK){ campainha(); falar('Som do controle de pátio ativo.'); } });
 document.addEventListener('click', ()=>{ if(!SOM_OK) ativarSom(); }, {once:false});
 
 function iniciar(){
