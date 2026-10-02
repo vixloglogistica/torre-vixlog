@@ -76,14 +76,15 @@ function nomeCliente(deal, uf, funil) {
     : [limpa(uf[UF.razaoSocial]), t.length >= 3 ? t[1] : '', limpa(uf[UF.clienteDigitado])];
   return lista.find(ok) || (/^preencher/i.test(t[0]) ? 'Sem identificação' : t[0]) || '—';
 }
-/** "Tipo da Operação" (Descarga | Crossdocking): acha a coluna pelo valor, em qualquer funil. Se souber o código UF, ponha em UF.operacao. */
-const OPS = { descarga: 'Descarga', crossdocking: 'Crossdocking' };
+/** "Tipo da Operação" (Recebimento: Descarga | Crossdocking; Expedição: Carregamento | Crossdocking): acha a coluna pelo valor, em qualquer funil. Se souber o código UF, ponha em UF.operacao. */
+const OPS = { descarga: 'Descarga', carregamento: 'Carregamento', crossdocking: 'Crossdocking' };
 function operacao(uf) {
   const lista = UF.operacao ? [uf[UF.operacao]] : Object.entries(uf).filter(([k]) => /^UF_CRM/.test(k)).map(([, v]) => v);
   for (const v of lista) {
     const t = limpa(v).toLowerCase();
     if (t === 'crossdocking' || t === 'cross docking' || t === 'cross-docking') return OPS.crossdocking;
     if (t === 'descarga') return OPS.descarga;
+    if (t === 'carregamento') return OPS.carregamento;
   }
   return '';
 }
