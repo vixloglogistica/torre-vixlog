@@ -337,7 +337,7 @@ function painel(modo, itens){
     return (a.chegada||a.movido||'').localeCompare(b.chegada||b.movido||'');
   });
   const concl = lista.filter(i=>i.etapa==='concluido'), outros = lista.filter(i=>i.etapa!=='concluido');
-  const vis = outros.concat(concl.slice(0,8));
+  const vis = outros.concat(concl);
   const nomeEtapa = {apresentou:'VEÍCULO SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',nao_compareceu:'NÃO COMPARECEU',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
   const html = vis.map(i=>{
     const k = i.etapa, cor = ETAPA[k].cor;
@@ -358,9 +358,11 @@ function painel(modo, itens){
       ${tiles(i.doca?('0'+i.doca).slice(-2):'',2,'d '+flip)}
       ${tiles(hhmm(i.chegada),5,'t '+flip)}
       ${tcell}</div>`;
-  }).join('') + (concl.length>8 ? `<div class="mais">+ ${concl.length-8} CONCLUÍDOS HOJE</div>` : '') ;
+  }).join('') ;
   const corpo = document.querySelector('.bd-b'); if (!corpo) return;
+  const pos = corpo.scrollTop;   // mantém a posição da rolagem ao atualizar
   corpo.innerHTML = html || '<div class="vazio">— NENHUM VEÍCULO —</div>';
+  corpo.scrollTop = pos;
 }
 
 function kpis(modo, itens){
@@ -414,7 +416,7 @@ function rolar(t){
     let s = ROLA.get(el); if(!s){ s = {dir:1, pausa:3}; ROLA.set(el,s); }
     if (max < 4){ el.scrollTop = 0; return; }
     if (s.pausa > 0){ s.pausa -= dt; return; }
-    el.scrollTop += s.dir * 28 * dt;
+    el.scrollTop += s.dir * (el.classList.contains('bd-b') ? 45 : 28) * dt;
     if (el.scrollTop >= max-1){ s.dir=-1; s.pausa=3; } else if (el.scrollTop <= 0){ s.dir=1; s.pausa=3; }
   });
   requestAnimationFrame(rolar);
