@@ -45,6 +45,9 @@
   .kpi .r{font-size:.95rem;letter-spacing:.14em;color:var(--mut);font-weight:700;white-space:nowrap}
   .kpi .v{font-size:3rem;font-weight:800;line-height:1;margin-top:.1rem}
   .kpi .v small{font-size:1.2rem;color:var(--mut);font-weight:600;margin-left:.3rem}
+  .kpi{position:relative}
+  .kpi .p{position:absolute;right:1rem;bottom:.75rem;font-size:1.7rem;font-weight:800;color:var(--c);opacity:.9}
+  .kpi .p small{font-size:.9rem;font-weight:700;color:var(--mut);margin-left:.05rem}
 
   /* ---------- quadro ---------- */
   main{display:grid;gap:.8rem;min-height:0}
@@ -374,27 +377,27 @@ function kpis(modo, itens){
   let t;
   if (modo==='rec'){
     const total = itens.filter(i=>i.etapa!=='incorreto').length;
-    const pct = total ? Math.round(100*concl.length/total) : 0;
+    const pc = v => total ? Math.round(100*v/total) : null;   // % sobre o total do dia
     t = [
       ['TOTAL DO DIA', total, '', '#5b8cff'],
-      ['AGUARDANDO CHEGADA', n('agendado'), '', '#5b8cff'],
-      ['NO PÁTIO', n('apresentou')+n('aguardando_doca'), '', '#ffb020'],
-      ['EM RECEBIMENTO', n('em_andamento'), '', '#a98bff'],
-      ['CONCLUÍDOS', concl.length, `<small>${pct}%</small>`, '#2ecc8f'],
-      ['NO-SHOW', naoCump, '', naoCump? '#ff4d5e':'#8fa1cc'],
+      ['AGUARDANDO CHEGADA', n('agendado'), pc(n('agendado')), '#5b8cff'],
+      ['NO PÁTIO', n('apresentou')+n('aguardando_doca'), pc(n('apresentou')+n('aguardando_doca')), '#ffb020'],
+      ['EM RECEBIMENTO', n('em_andamento'), pc(n('em_andamento')), '#a98bff'],
+      ['CONCLUÍDOS', concl.length, pc(concl.length), '#2ecc8f'],
+      ['NO-SHOW', naoCump, pc(naoCump), naoCump? '#ff4d5e':'#8fa1cc'],
     ];
   } else {
-    const total = itens.length;
+    const total = itens.length, pc = v => total ? Math.round(100*v/total) : null;
     t = [
       ['TOTAL DO DIA', total, '', '#5b8cff'],
-      ['SE APRESENTARAM', n('apresentou'), '', '#ffb020'],
-      ['AGUARDANDO DOCA', n('aguardando_doca'), '', '#ff7a3d'],
-      ['EM EXPEDIÇÃO', n('em_andamento'), '', '#a98bff'],
-      ['CONCLUÍDAS', concl.length, '', '#2ecc8f'],
+      ['SE APRESENTARAM', n('apresentou'), pc(n('apresentou')), '#ffb020'],
+      ['AGUARDANDO DOCA', n('aguardando_doca'), pc(n('aguardando_doca')), '#ff7a3d'],
+      ['EM EXPEDIÇÃO', n('em_andamento'), pc(n('em_andamento')), '#a98bff'],
+      ['CONCLUÍDAS', concl.length, pc(concl.length), '#2ecc8f'],
       ['TEMPO MÉDIO', medio, '', '#5b8cff'],
     ];
   }
-  $('#kpis').innerHTML = t.map(([r,v,s,c])=>`<div class="kpi" style="--c:${c}"><span class="r">${r}</span><span class="v tnum">${v}${s}</span></div>`).join('');
+  $('#kpis').innerHTML = t.map(([r,v,s,c])=>`<div class="kpi" style="--c:${c}"><span class="r">${r}</span><span class="v tnum">${v}</span>${s===null||s===''?'':`<span class="p tnum">${s}<small>%</small></span>`}</div>`).join('');
 }
 
 function rodape(modo, ){
