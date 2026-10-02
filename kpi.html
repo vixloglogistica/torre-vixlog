@@ -101,8 +101,8 @@ function calc(itens, hoje){
   const esp = [], cic = [];
   its.forEach(i=>{
     const a=quando(i.ch), b=quando(i.in), c=quando(i.fi);
-    if (a&&b&&b>a) esp.push((b-a)/60000);
-    if (a&&c&&c>a) cic.push((c-a)/60000);
+    if (a&&b&&b>a&&(b-a)<=864e5) esp.push((b-a)/60000);
+    if (a&&c&&c>a&&(c-a)<=864e5) cic.push((c-a)/60000);       // ignora lançamentos com mais de 24 h (erro de digitação)
   });
   const med = v => v.length ? v.reduce((s,x)=>s+x,0)/v.length : null;
   return {total:its.length, ok, ns, taxaOk: base?100*ok/base:null, taxaNs: base?100*ns/base:null, espera:med(esp), ciclo:med(cic),
@@ -133,7 +133,7 @@ function desenhar(){
     ['TOTAL DE AGENDAMENTOS', k.total, exp?'veículos atendidos':'previstos no mês', delta(k.total,p.total,'pct',true), 'var(--az)'],
     ['TAXA CONCLUÍDO', k.taxaOk==null?'—':Math.round(k.taxaOk)+'%', `${k.ok} concluídos`, delta(k.taxaOk,p.taxaOk,'pp',true), 'var(--ok)'],
     exp ? ['TEMPO MÉD. ATENDIMENTO', dur(k.ciclo), 'chegada → fim', delta(k.ciclo,p.ciclo,'pct',false), 'var(--am)']
-        : ['TEMPO MÉD. AGUARDAR', dur(k.espera), 'chegada → início', delta(k.espera,p.espera,'pct',false), 'var(--am)'],
+        : ['TEMPO MÉD. AGUARDAR', dur(k.ciclo), 'chegada → conclusão', delta(k.ciclo,p.ciclo,'pct',false), 'var(--am)'],
     exp ? ['CLIENTES ATENDIDOS', k.clientes, 'no mês', delta(k.clientes,p.clientes,'pct',true), 'var(--rox)']
         : ['TAXA NO-SHOW', k.taxaNs==null?'—':Math.round(k.taxaNs)+'%', `${k.ns} no-show`, delta(k.taxaNs,p.taxaNs,'pp',false), 'var(--vm)'],
   ].map(([r,v,s,d,c])=>`<div class="box kpi" style="--c:${c}"><span class="r">${r}</span><span class="v">${v}</span><span class="s">${s}</span>${d}</div>`).join('');
