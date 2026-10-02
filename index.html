@@ -74,6 +74,30 @@
   .concl .tr{font-size:1.2rem} .concl .tp{font-size:1.05rem;color:var(--verde)}
   .concl .cl{font-size:.95rem}
 
+
+  /* ---------- visual "painel de aeroporto" ---------- */
+  .bd{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .bd-h,.row{display:grid;grid-template-columns:16rem 24rem 1fr 11.5rem 7rem 7.5rem 8.5rem;align-items:center;column-gap:1rem;padding:0 1.2rem}
+  .bd-h{height:3rem;border-bottom:2px solid var(--linha);font-size:1rem;letter-spacing:.18em;color:var(--mut);font-weight:700;background:linear-gradient(rgba(255,255,255,.05),transparent)}
+  .bd-b{flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column}
+  .row{height:4.05rem;flex:none;border-bottom:1px solid rgba(39,57,107,.55)}
+  .row:nth-child(even){background:rgba(255,255,255,.025)}
+  .stt{font-weight:800;letter-spacing:.07em;font-size:1.12rem;color:var(--c);border-left:.35rem solid var(--c);padding-left:.7rem;line-height:1.1}
+  .fl{display:inline-flex;gap:.1rem}
+  .fl i{font-style:normal;display:grid;place-items:center;width:1.12rem;height:2.1rem;background:linear-gradient(#22346a 0 49%,#14224a 51% 100%);
+        border-radius:.2rem;font-weight:700;font-size:1.4rem;color:#f4f7ff;position:relative;font-family:Consolas,"Segoe UI",monospace}
+  .fl i::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.4)}
+  .fl.m i{width:.9rem;height:1.55rem;font-size:1.05rem;color:#c9d6f7}
+  .fl.p i{width:1.3rem;font-size:1.3rem;color:#ffd87a}
+  .fl.d i{width:1.5rem;color:var(--ambar)}
+  .fl.t i{width:1.15rem;color:#fff}
+  .fl.flip i{animation:flap .55s ease-out both;animation-delay:calc(var(--k) * 22ms)}
+  @keyframes flap{0%{transform:rotateX(-90deg);opacity:.2}60%{transform:rotateX(12deg);opacity:1}100%{transform:none}}
+  .row .tmp .fl i{color:var(--verde)} .row.atencao .tmp .fl i{color:var(--ambar)} .row.critico .tmp .fl i{color:var(--verm);animation:pisca 1s steps(2) infinite}
+  .row.crit-bg{background:rgba(255,77,94,.1)}
+  .row.fim .fl i{color:#8fa1cc}
+  .mais{height:3rem;display:grid;place-items:center;color:var(--mut);letter-spacing:.14em;font-size:1.05rem;flex:none}
+
   /* ---------- rodapé ---------- */
   footer{display:flex;justify-content:space-between;align-items:center;font-size:1.05rem;color:var(--mut);gap:1rem;white-space:nowrap}
   footer b{color:var(--txt)} footer .meio{overflow:hidden;text-overflow:ellipsis;flex:1;text-align:center}
@@ -143,6 +167,7 @@ const CFG = Object.assign({
   viradaHora: 12,          // antes disso: recebimento; depois: expedição
   atencaoMin: 30,          // veículo esperando há mais de X min → amarelo
   criticoMin: 60,          // há mais de X min → vermelho piscando
+  visual: 'quadro',        // 'quadro' (colunas) ou 'painel' (lista estilo aeroporto). Tecla V alterna
   chamar: ['apresentou'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
   maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
@@ -191,6 +216,7 @@ const primeiroNome = s => String(s||'').trim().split(/\s+/)[0] || '';
 const bonito = s => String(s||'').replace(/\s+/g,' ').trim();
 
 /* ---------- estado ---------- */
+let ESTILO = (Q.get('visual') || CFG.visual || 'quadro'), PREV = new Map();
 let DADOS = {itens:[], futuros:{}, hoje:''}, MODO_FORCADO = Q.get('modo') || '', ULTIMO_OK = null, FALHA_DESDE = null;
 const MODO = () => (MODO_FORCADO==='rec'||MODO_FORCADO==='exp') ? MODO_FORCADO : (horaSP() < CFG.viradaHora ? 'rec' : 'exp');
 let MODO_ATUAL = '';
@@ -204,8 +230,8 @@ function relogio(){
   $('#d2').textContent = parte(d,{day:'2-digit',month:'long',year:'numeric'});
   document.querySelectorAll('[data-desde]').forEach(el=>{
     const ms = Date.now() - (+el.dataset.desde);
-    el.textContent = mmss(ms);
-    const card = el.closest('.card'); if (!card) return;
+    if (el.classList.contains('tmp')) el.innerHTML = tiles(mmss(ms),7,'t'); else el.textContent = mmss(ms);
+    const card = el.closest('.card,.row'); if (!card) return;
     const min = ms/60000;
     card.classList.toggle('critico', min >= CFG.criticoMin);
     card.classList.toggle('atencao', min >= CFG.atencaoMin && min < CFG.criticoMin);
@@ -219,7 +245,13 @@ function montar(modo){
   MODO_ATUAL = modo; const q = QUADROS[modo];
   $('#tit').textContent = q.titulo; const m = $('#modo'); m.textContent = q.rotulo; m.className = 'modo ' + modo;
   document.title = 'Torre de Controle · ' + q.titulo;
-  const quadro = $('#quadro'); quadro.style.gridTemplateColumns = q.grid;
+  const quadro = $('#quadro');
+  if (ESTILO === 'painel'){
+    quadro.style.gridTemplateColumns = '1fr'; PREV.clear();
+    quadro.innerHTML = `<div class="bd"><div class="bd-h"><span>STATUS</span><span>TRANSPORTADORA</span><span>CLIENTE</span><span>PLACA</span><span>DOCA</span><span>CHEGADA</span><span>TEMPO</span></div><div class="bd-b" data-b></div></div>`;
+    desenhar(); return;
+  }
+  quadro.style.gridTemplateColumns = q.grid;
   quadro.innerHTML = q.colunas.map(k=>{
     const e = ETAPA[k];
     return `<section class="col ${k==='concluido'?'concl':''}" style="--c:${e.cor}" data-k="${k}">
@@ -263,6 +295,7 @@ function cartao(i, k){
 const CONHECIDOS = new Set();
 function desenhar(){
   const modo = MODO_ATUAL, q = QUADROS[modo], itens = filtrar(modo);
+  if (ESTILO === 'painel'){ painel(modo, itens); kpis(modo, itens); rodape(modo); relogio(); return; }
   const por = k => itens.filter(i=>i.etapa===k);
   q.colunas.forEach(k=>{
     const sec = document.querySelector(`.col[data-k="${k}"]`); if(!sec) return;
@@ -277,6 +310,47 @@ function desenhar(){
   });
   itens.forEach(i=>CONHECIDOS.add(i.id+'-'+i.etapa));
   kpis(modo, itens); rodape(modo); relogio();
+}
+
+
+/* ---------- visual painel de aeroporto ---------- */
+const tiles = (txt, n, cls='') => {
+  const t = String(txt||'').toUpperCase().slice(0,n).padEnd(n,' ');
+  return `<span class="fl ${cls}">` + [...t].map((c,k)=>`<i style="--k:${k}">${c===' '?'&nbsp;':esc(c)}</i>`).join('') + '</span>';
+};
+function painel(modo, itens){
+  const ordem = ['apresentou','aguardando_doca','em_andamento','agendado','concluido'];
+  const rank = k => ordem.indexOf(k);
+  const lista = itens.filter(i=>rank(i.etapa)>=0).sort((a,b)=>{
+    const d = rank(a.etapa)-rank(b.etapa); if (d) return d;
+    if (a.etapa==='concluido') return (b.fim||b.movido||'').localeCompare(a.fim||a.movido||'');
+    return (a.chegada||a.movido||'').localeCompare(b.chegada||b.movido||'');
+  });
+  const concl = lista.filter(i=>i.etapa==='concluido'), outros = lista.filter(i=>i.etapa!=='concluido');
+  const vis = outros.concat(concl.slice(0,8));
+  const nomeEtapa = {apresentou:'VEÍCULO SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
+  const html = vis.map(i=>{
+    const k = i.etapa, cor = ETAPA[k].cor;
+    const sig = [k,i.transportadora,i.cliente,i.placa,i.doca,i.chegada].join('|');
+    const flip = PREV.get(i.id)!==sig ? 'flip' : '';
+    PREV.set(i.id, sig);
+    let tempo = '', desde = '';
+    if (k==='apresentou'||k==='aguardando_doca'){ const t0 = quando(i.chegada)||quando(i.movido); desde = t0?t0.getTime():Date.now(); }
+    else if (k==='em_andamento'){ const t0 = quando(i.inicio)||quando(i.movido)||quando(i.chegada); desde = t0?t0.getTime():Date.now(); }
+    else if (k==='concluido'){ const a=quando(i.chegada), b=quando(i.fim)||quando(i.movido); tempo = a&&b? dur(b-a):''; }
+    const tcell = desde ? `<span class="tmp" data-desde="${desde}"></span>` : `<span class="tmp">${tiles(tempo,7,'t '+flip)}</span>`;
+    const cli = curto(i.cliente)||bonito(i.cliente);
+    return `<div class="row ${k==='concluido'?'fim':''}" style="--c:${cor}">
+      <span class="stt">${nomeEtapa[k]}</span>
+      ${tiles(bonito(i.transportadora)||'A DEFINIR',19,flip)}
+      ${tiles(cli,28,'m '+flip)}
+      ${tiles(k==='agendado'||k==='concluido'?'':i.placa,7,'p '+flip)}
+      ${tiles(i.doca?('0'+i.doca).slice(-2):'',2,'d '+flip)}
+      ${tiles(hhmm(i.chegada),5,'t '+flip)}
+      ${tcell}</div>`;
+  }).join('') + (concl.length>8 ? `<div class="mais">+ ${concl.length-8} CONCLUÍDOS HOJE</div>` : '') ;
+  const corpo = document.querySelector('.bd-b'); if (!corpo) return;
+  corpo.innerHTML = html || '<div class="vazio">— NENHUM VEÍCULO —</div>';
 }
 
 function kpis(modo, itens){
@@ -498,7 +572,7 @@ function simular(){
    ===================================================================== */
 document.addEventListener('keydown', e=>{
   const k = e.key.toLowerCase();
-  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''}
+  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
   else if (k==='t'){ ativarSom(); const it = (DADOS.itens.find(i=>i.etapa==='apresentou')) || {funil:MODO(),etapa:'apresentou',transportadora:'Transportadora Teste',cliente:'Cliente Teste Ltda',doca:'01',placa:'TST1A23',tipo:'Paletes',qtd:'10'}; chamar(it); }
   relogio();
 });

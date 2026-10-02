@@ -43,6 +43,7 @@ O token fica gravado no navegador e some da barra de endereço. Se o som não to
 - Para chamar também em *Aguardando doca* ou *Em recebimento* (ex.: "dirija-se à doca 2"), edite em `config.js`: `chamar: ['apresentou','em_andamento']`.
 - Tempo de espera do veículo no pátio fica amarelo após 30 min e vermelho piscando após 60 min (`atencaoMin`, `criticoMin`).
 - Se a internet/Bitrix24 cair, a tela mantém os últimos dados e mostra "SEM CONEXÃO desde HH:MM".
+- **Dois visuais**: *quadro* (colunas por etapa, padrão) e *painel* (lista estilo painel de aeroporto, letras que "viram" quando algo muda). Tecla **V** alterna; para deixar o painel como padrão, use `visual: 'painel'` no `config.js` ou `?visual=painel` na URL.
 - Demonstração sem Bitrix24: `index.html?demo`.
 
 ## Campos do Bitrix24 usados (confirmar!)
