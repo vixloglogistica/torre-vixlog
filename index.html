@@ -470,9 +470,25 @@ function campainha(){            // "ding-dong" duplo, estilo chamada de senha
   if (!AC || Q.has('mudo')) return;
   for (let r=0;r<2;r++){ nota(880, r*1.1, .8); nota(659.25, r*1.1+.45, 1.0); }
 }
-function falar(txt){
+let FALA_ERR = '';
+function falar(txt, tentativa=0){
   if (!CFG.falar || Q.has('mudo') || !('speechSynthesis' in window)) return;
-  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; if(VOZ) u.voice=VOZ; u.rate=.92; u.volume=1; speechSynthesis.speak(u); }catch(e){}
+  try{
+    if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+    if (speechSynthesis.paused) speechSynthesis.resume();
+    const u = new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; u.rate=.92; u.volume=1;
+    const lista = speechSynthesis.getVoices().filter(x=>/^pt/i.test(x.lang));
+    // 1ª tentativa: melhor voz; 2ª: voz local (offline), que não depende de internet; 3ª: padrão do sistema
+    let v = tentativa===0 ? VOZ : tentativa===1 ? (lista.find(x=>x.localService) || null) : null;
+    if (v) u.voice = v;
+    window.__u = u;                                   // mantém referência (o Chrome/Edge descartam a fala se o objeto for coletado)
+    u.onerror = e => { FALA_ERR = e.error || 'erro'; console.warn('voz:', FALA_ERR); if (tentativa < 2 && FALA_ERR !== 'canceled' && FALA_ERR !== 'interrupted') setTimeout(()=>falar(txt, tentativa+1), 300); };
+    u.onstart = () => { FALA_ERR = ''; };
+    speechSynthesis.speak(u);
+    // se em 2,5 s não começou nem deu erro (voz online travada), tenta a próxima
+    setTimeout(()=>{ if (window.__u === u && !speechSynthesis.speaking && tentativa < 2 && !u.__ok) falar(txt, tentativa+1); }, 2500);
+    u.addEventListener('start', ()=>{ u.__ok = true; });
+  }catch(e){}
 }
 
 const FILA = []; let EM_TELA = false;
