@@ -88,6 +88,7 @@ export function transformar(dealTab, ufTab, agora = new Date()) {
   const ufPorDeal = new Map(toObjs(ufTab).map((r) => [String(r.DEAL_ID), r]));
   const itens = [];
   const futuros = {};
+  const prox = [];   // agendados de dias futuros (para a tela "Programação do dia seguinte")
 
   for (const d of toObjs(dealTab)) {
     const funil = String(d.CATEGORY_ID) === '5' ? 'rec' : String(d.CATEGORY_ID) === '11' ? 'exp' : null;
@@ -99,7 +100,12 @@ export function transformar(dealTab, ufTab, agora = new Date()) {
     const chegada = limpa(uf[UF.chegada]);
     const dataAg = funil === 'rec' ? dataDe(uf[UF.dataAgendada]) : dataDe(chegada) || dataDe(d.DATE_CREATE);
 
-    if (funil === 'rec' && etapa === 'agendado' && dataAg > hoje) { futuros[dataAg] = (futuros[dataAg] || 0) + 1; continue; }
+    if (funil === 'rec' && etapa === 'agendado' && dataAg > hoje) {
+      futuros[dataAg] = (futuros[dataAg] || 0) + 1;
+      const qf = qtd(uf);
+      prox.push({ id: Number(d.ID), dataAg, cliente: nomeCliente(d, uf, funil), tipo: qf.tipo, qtd: qf.qtd });
+      continue;
+    }
 
     const ehHoje = dataAg === hoje;
     const veiculoNoPatio = ABERTAS.has(etapa) && dataAg < hoje; // sobrou de ontem
@@ -126,7 +132,10 @@ export function transformar(dealTab, ufTab, agora = new Date()) {
       doDiaAnterior: veiculoNoPatio,
     });
   }
-  return { geradoEm: agora.toISOString(), hoje, itens, futuros };
+  // próximo dia com agendamento (sexta mostra segunda; sábado entra se houver)
+  const proxData = prox.map((p) => p.dataAg).sort()[0];
+  const amanha = proxData ? { data: proxData, itens: prox.filter((p) => p.dataAg === proxData).map(({ id, cliente, tipo, qtd }) => ({ id, cliente, tipo, qtd })) } : null;
+  return { geradoEm: agora.toISOString(), hoje, itens, futuros, amanha };
 }
 
 // ---------- chamada ao Bitrix24 ----------

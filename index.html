@@ -164,7 +164,7 @@
      ?modo=rec|exp    força o quadro (padrão: automático por horário)
      ?virada=12       hora em que o quadro passa de Recebimento para Expedição
      ?mudo            não toca som
-   Teclas: R = recebimento · E = expedição · A = automático · T = testar chamada · K = painel de KPIs · V = visual
+   Teclas: R = recebimento · E = expedição · A = automático · T = testar chamada · K = painel de KPIs · P = programação de amanhã · V = visual
    ===================================================================== */
 const CFG = Object.assign({
   api: '',                 // URL do proxy (Cloudflare Worker)
@@ -175,6 +175,8 @@ const CFG = Object.assign({
   visual: 'quadro',        // 'quadro' (colunas) ou 'painel' (lista estilo aeroporto). Tecla V alterna
   noShowHora: 12,          // Recebimento: agendado que não se apresentou até essa hora vira NO-SHOW (0 = desliga)
   kpiCadaSeg: 120,         // a cada quantos segundos o painel de KPIs entra na tela (0 = nunca)
+  amanhaHora: 16,          // a partir dessa hora, a tela "Programação do dia seguinte" entra na rotação (0 desliga)
+  amanhaSeg: 24,           // quanto tempo ela fica
   kpiSeg: 24,              // quanto tempo ele fica (divide entre Visão Geral / Recebimento / Expedição)
   chamar: ['apresentou','em_andamento'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
@@ -504,12 +506,15 @@ function chamar(item){ FILA.push(item); if(!EM_TELA) proxima(); }
 /* ---- rotação: o painel de KPIs entra de tempos em tempos (a chamada sempre fica por cima) ---- */
 let KPI_ON = false, KPI_MANUAL = false, KPI_PROX = Date.now() + (CFG.kpiCadaSeg||0)*1000, KPI_T = [];
 const noPatio = () => DADOS.itens.some(i=>!i.doDiaAnterior && (i.etapa==='apresentou'||i.etapa==='aguardando_doca'));
-function kpiAbrir(manual){
+let ROT_N = 0;
+const amanhaOk = () => CFG.amanhaHora > 0 && horaSP() >= CFG.amanhaHora && DADOS.amanha && DADOS.amanha.itens && DADOS.amanha.itens.length;
+function kpiAbrir(manual, qual){
   if (KPI_ON) return; KPI_ON = true; KPI_MANUAL = !!manual;
-  const f = $('#kpi'); f.src = 'kpi.html?embed'; f.style.display = 'block';
-  const t = (CFG.kpiSeg||24)*1000/3;
-  ['geral','rec','exp'].forEach((a,n)=>KPI_T.push(setTimeout(()=>{ try{ f.contentWindow.postMessage({aba:a},'*'); }catch(e){} }, 1500 + n*t)));
-  if (!manual) KPI_T.push(setTimeout(kpiFechar, (CFG.kpiSeg||24)*1000));
+  const f = $('#kpi'); qual = qual || 'kpi';
+  f.src = (qual==='amanha' ? 'amanha.html' : 'kpi.html') + '?embed'; f.style.display = 'block';
+  const seg = (qual==='amanha' ? CFG.amanhaSeg : CFG.kpiSeg) || 24, t = seg*1000/3;
+  if (qual==='kpi') ['geral','rec','exp'].forEach((a,n)=>KPI_T.push(setTimeout(()=>{ try{ f.contentWindow.postMessage({aba:a},'*'); }catch(e){} }, 1500 + n*t)));
+  if (!manual) KPI_T.push(setTimeout(kpiFechar, seg*1000));
 }
 function kpiFechar(){
   KPI_T.forEach(clearTimeout); KPI_T = []; KPI_ON = false; KPI_MANUAL = false;
@@ -521,7 +526,8 @@ function kpiTick(){
   if (KPI_ON){ if (!KPI_MANUAL && (noPatio() || EM_TELA)) kpiFechar(); return; }
   if (Date.now() < KPI_PROX) return;
   if (noPatio() || EM_TELA || FILA.length){ KPI_PROX = Date.now() + 15000; return; }   // movimento no pátio: adia
-  kpiAbrir(false);
+  // depois das 16h, alterna: KPI → programação de amanhã → KPI …
+  kpiAbrir(false, (amanhaOk() && ROT_N++ % 2 === 1) ? 'amanha' : 'kpi');
 }
 setInterval(kpiTick, 1000);
 
@@ -657,7 +663,7 @@ function simular(){
    ===================================================================== */
 document.addEventListener('keydown', e=>{
   const k = e.key.toLowerCase();
-  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='k'){ KPI_ON ? kpiFechar() : kpiAbrir(true); } else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
+  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='k'){ KPI_ON ? kpiFechar() : kpiAbrir(true); } else if (k==='p'){ KPI_ON ? kpiFechar() : kpiAbrir(true, 'amanha'); } else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
   else if (k==='t'){ ativarSom(); TESTE_N++; const base = DADOS.itens.find(i=>i.etapa==='apresentou') || {funil:MODO(),transportadora:'Jomed Transportes',cliente:'Semina Industria e Comercio Ltda',doca:'03',placa:'TST1A23',tipo:'Paletes',qtd:'10'};
     chamar(Object.assign({}, base, {etapa: TESTE_N%2 ? 'apresentou' : 'em_andamento', doca: base.doca || '03'})); }
   relogio();

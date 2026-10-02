@@ -18,30 +18,27 @@
   .dt{margin-left:auto;text-align:right}
   .dt b{display:block;font-size:2.2rem;letter-spacing:.06em;font-weight:800;color:var(--am);text-transform:uppercase}
   .dt span{font-size:1.1rem;color:var(--mut)}
-  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:.8rem;margin-top:.5rem;flex:none}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:.5rem;flex:none}
   .kpi{background:var(--panel);border:1px solid var(--linha);border-left:.45rem solid var(--c);border-radius:.7rem;padding:.7rem 1.1rem}
   .kpi .r{font-size:.95rem;letter-spacing:.14em;color:var(--mut);font-weight:700}
-  .kpi .v{font-size:3.2rem;font-weight:800;line-height:1.05}
-  main{flex:1;min-height:0;display:grid;grid-template-columns:2.1fr 1fr;gap:.8rem;margin-top:.8rem}
-  @media (max-width:1199px){main{grid-template-columns:1fr}}
-  .box{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-  .box h3{font-size:.95rem;letter-spacing:.18em;color:var(--mut);font-weight:700;padding:.9rem 1.2rem .6rem;flex:none}
-  .cab,.lin{display:grid;grid-template-columns:1.1fr 1.5fr 1fr 1.2fr;column-gap:1rem;align-items:center;padding:0 1.2rem}
-  .cab{height:2.6rem;border-bottom:2px solid var(--linha);font-size:.95rem;letter-spacing:.16em;color:var(--mut);font-weight:700;background:linear-gradient(rgba(255,255,255,.05),transparent);flex:none}
-  .corpo{flex:1;overflow:hidden;min-height:0}
-  .lin{min-height:3.7rem;border-bottom:1px solid rgba(39,57,107,.55);padding-top:.35rem;padding-bottom:.35rem}
-  .lin .t{font-size:1.35rem;font-weight:800;text-transform:uppercase;line-height:1.1;overflow-wrap:anywhere}
-  .lin .c{font-size:1.15rem;color:#c5d2f5;line-height:1.15;overflow-wrap:anywhere}
-  .lin .q{font-size:1.25rem;font-weight:800}
-  .lin .q i{font-style:normal;font-weight:600;color:var(--mut);font-size:.95rem;margin-left:.3rem}
-  .lin .o{font-size:.95rem;color:var(--am);line-height:1.15}
-  .cli{padding:0 1.2rem;overflow:hidden;flex:1;min-height:0}
-  .cl{padding:.55rem 0;border-bottom:1px solid rgba(39,57,107,.55)}
-  .cl .n{display:flex;justify-content:space-between;gap:.8rem;font-size:1.15rem;font-weight:800;text-transform:uppercase}
-  .cl .n em{font-style:normal;color:var(--az);font-size:1.6rem;line-height:1}
-  .cl .b{height:.5rem;border-radius:.3rem;background:#14275a;margin-top:.35rem;overflow:hidden}
-  .cl .b i{display:block;height:100%;background:linear-gradient(90deg,#4a6fe0,#27368f)}
-  .cl .s{font-size:.9rem;color:var(--mut);margin-top:.25rem}
+  .kpi .v{font-size:3.4rem;font-weight:800;line-height:1.05}
+  main{flex:1;min-height:0;margin-top:.8rem;display:flex}
+  .box{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;flex:1}
+  .cab,.lin{display:grid;grid-template-columns:1fr 11rem 14rem 14rem;column-gap:1.2rem;align-items:center;padding:0 1.6rem}
+  .cab{height:3rem;border-bottom:2px solid var(--linha);font-size:1rem;letter-spacing:.18em;color:var(--mut);font-weight:700;background:linear-gradient(rgba(255,255,255,.05),transparent);flex:none}
+  .corpo{flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column}
+  .lin{height:4.5rem;flex:none;border-bottom:1px solid rgba(39,57,107,.55)}
+  .lin:nth-child(even){background:rgba(255,255,255,.025)}
+  .fl{display:inline-flex;gap:.12rem}
+  .fl i{font-style:normal;display:grid;place-items:center;width:1.45rem;height:2.9rem;background:linear-gradient(#22346a 0 49%,#14224a 51% 100%);border-radius:.25rem;
+        font-weight:700;font-size:1.95rem;color:#f4f7ff;position:relative;font-family:Consolas,"Segoe UI",monospace}
+  .fl i::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.4)}
+  .fl.p i{color:var(--ok)} .fl.v i{color:var(--am)} .fl.z i{color:#fff} .fl.mut i{color:#4a5a8a}
+  .fl.flip i{animation:flap .55s ease-out both;animation-delay:calc(var(--k) * 22ms)}
+  @keyframes flap{0%{transform:rotateX(-90deg);opacity:.2}60%{transform:rotateX(12deg);opacity:1}100%{transform:none}}
+  .tot{background:#14275a;border-top:2px solid var(--linha);height:4.8rem;flex:none}
+  .tot .rot{font-size:1.3rem;letter-spacing:.14em;font-weight:800}
+  .cab span:nth-child(n+2){text-align:center} .lin>.fl{justify-self:center} .lin>.fl:first-child,.tot>.rot{justify-self:start}
   .vazio{margin:auto;color:var(--mut);font-size:1.3rem;letter-spacing:.12em;text-align:center;padding:3rem}
   #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--vm);color:#ffb3bb;padding:.7rem 1rem;border-radius:.7rem;display:none;z-index:5}
 </style>
@@ -54,10 +51,11 @@
 </header>
 <section class="kpis" id="kpis"></section>
 <main>
-  <div class="box"><h3>AGENDAMENTOS PREVISTOS</h3>
-    <div class="cab"><span>TRANSPORTADORA</span><span>CLIENTE</span><span>CARGA</span><span>OBSERVAÇÃO</span></div>
-    <div class="corpo" id="lista" data-b></div></div>
-  <div class="box"><h3>POR CLIENTE</h3><div class="cli" id="clientes" data-b></div></div>
+  <div class="box">
+    <div class="cab"><span>CLIENTE</span><span>AGEND.</span><span>PALETES</span><span>VOLUMES</span></div>
+    <div class="corpo" id="lista" data-b></div>
+    <div class="lin tot" id="total"></div>
+  </div>
 </main>
 <div id="erro"></div>
 <script src="config.js"></script>
@@ -93,19 +91,21 @@ async function carregar(){
 function desenhar(a){
   const d = new Date(a.data+'T12:00:00Z');
   $('#dia').textContent = DIAS[d.getUTCDay()]; $('#data').textContent = `${String(d.getUTCDate()).padStart(2,'0')} de ${MESES[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
-  const its = a.itens || [];
-  const pal = its.filter(i=>i.tipo==='Paletes').reduce((s,i)=>s+(+i.qtd||0),0), vol = its.filter(i=>i.tipo==='Volumes').reduce((s,i)=>s+(+i.qtd||0),0);
-  const cli = {}; its.forEach(i=>{ const n = curto(i.cliente)||'—'; (cli[n] ||= {n:0,p:0,v:0}).n++; if(i.tipo==='Paletes') cli[n].p += +i.qtd||0; else cli[n].v += +i.qtd||0; });
-  const trs = new Set(its.map(i=>bonito(i.transportadora).toUpperCase()).filter(Boolean));
-  $('#kpis').innerHTML = [['AGENDAMENTOS',its.length,'var(--az)'],['PALETES',nf(pal),'var(--ok)'],['VOLUMES',nf(vol),'var(--am)'],['CLIENTES',Object.keys(cli).length,'var(--rox)'],['TRANSPORTADORAS',trs.size,'#ff7a3d']]
+  const its = a.itens || [], cli = {};
+  its.forEach(i=>{ const n = curto(i.cliente)||bonito(i.cliente)||'—'; const c = (cli[n] ||= {n:0,p:0,v:0}); c.n++; if(i.tipo==='Paletes') c.p += +i.qtd||0; else if(i.tipo==='Volumes') c.v += +i.qtd||0; });
+  const pal = Object.values(cli).reduce((s,c)=>s+c.p,0), vol = Object.values(cli).reduce((s,c)=>s+c.v,0);
+  $('#kpis').innerHTML = [['AGENDAMENTOS',its.length,'var(--az)'],['CLIENTES',Object.keys(cli).length,'var(--rox)'],['PALETES',nf(pal),'var(--ok)'],['VOLUMES',nf(vol),'var(--am)']]
     .map(([r,v,c])=>`<div class="kpi" style="--c:${c}"><div class="r">${r}</div><div class="v">${v}</div></div>`).join('');
-  const ord = [...its].sort((x,y)=>(curto(x.cliente)||'').localeCompare(curto(y.cliente)||'') || (x.transportadora||'').localeCompare(y.transportadora||''));
-  $('#lista').innerHTML = ord.length ? ord.map(i=>`<div class="lin"><span class="t">${esc(bonito(i.transportadora)||'A definir')}</span><span class="c">${esc(curto(i.cliente)||bonito(i.cliente))}</span>
-      <span class="q">${i.qtd?esc(i.qtd):'—'}<i>${i.tipo==='Paletes'?'paletes':i.tipo==='Volumes'?'volumes':''}</i></span><span class="o">${esc(i.obs||'')}</span></div>`).join('') : '<div class="vazio">— NENHUM AGENDAMENTO —</div>';
-  const mx = Math.max(1,...Object.values(cli).map(c=>c.n));
-  $('#clientes').innerHTML = Object.entries(cli).sort((x,y)=>y[1].n-x[1].n).map(([n,c])=>`<div class="cl"><div class="n"><span>${esc(n)}</span><em>${c.n}</em></div><div class="b"><i style="width:${100*c.n/mx}%"></i></div>
-      <div class="s">${[c.p?nf(c.p)+' paletes':'',c.v?nf(c.v)+' volumes':''].filter(Boolean).join(' · ')}</div></div>`).join('');
+  const lin = Object.entries(cli).sort((x,y)=>y[1].n-x[1].n || (y[1].p+y[1].v)-(x[1].p+x[1].v));
+  const fl = (v,n,cls,flip) => tiles(v?nf(v).replace(/\./g,''):'', n, cls+' '+flip);
+  const num = (v,n,cls,flip) => `<span class="fl ${cls} ${flip}">`+[...String(v).padStart(n,' ')].map((c,k)=>`<i style="--k:${k}">${c===' '?'&nbsp;':c}</i>`).join('')+'</span>';
+  const flip = SIG !== JSON.stringify(lin) ? 'flip' : ''; SIG = JSON.stringify(lin);
+  $('#lista').innerHTML = lin.length ? lin.map(([n,c])=>`<div class="lin">${tiles(n,44,flip)}${num(c.n,2,'z',flip)}${c.p?num(c.p,4,'p',flip):tiles('-',4,'mut '+flip)}${c.v?num(c.v,5,'v',flip):tiles('-',5,'mut '+flip)}</div>`).join('') : '<div class="vazio">— NENHUM AGENDAMENTO —</div>';
+  $('#total').innerHTML = `<span class="rot">TOTAL</span>${num(its.length,2,'z','')}${num(pal,4,'p','')}${num(vol,5,'v','')}`;
 }
+let SIG = '';
+const tiles = (txt, n, cls='') => { const t = String(txt||'').toUpperCase().slice(0,n).padEnd(n,' ');
+  return `<span class="fl ${cls}">` + [...t].map((c,k)=>`<i style="--k:${k}">${c===' '?'&nbsp;':esc(c)}</i>`).join('') + '</span>'; };
 /* rolagem automática quando não cabe */
 const ROLA = new WeakMap(); let tAnt = performance.now();
 (function rolar(t){ const dt=(t-tAnt)/1000; tAnt=t;

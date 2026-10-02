@@ -93,3 +93,6 @@ A TV fala só o primeiro nome da transportadora e do cliente, e agora chama em d
 - Chegada: "Jomed chegou, para a Semina."
 - Recebimento em andamento: "Jomed, doca 3, descarregando a Semina." (Expedição: "carregando a Delly.")
 A voz escolhida é a mais natural do navegador (Edge: vozes "Natural"; Chrome: "Google português do Brasil"). Para forçar uma: `?voz=Francisca` no endereço ou `voz: 'Francisca'` no config.js. Tecla **T** testa as duas frases em sequência.
+
+## Programação do dia seguinte
+Tela `amanha.html` (estilo aeroporto): cliente, nº de agendamentos, paletes e volumes do próximo dia com agendamento (sexta mostra segunda; sábado se houver). Entra na rotação com o KPI a partir de `amanhaHora` (16h, `config.js`), dura `amanhaSeg` s. Tecla **P** abre/fecha manualmente. Prévia: `amanha.html?demo`. O Worker envia o campo `amanha` — é preciso reimplantar `proxy/worker.js`.
