@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Torre de Controle Vix Log</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5bd8'/%3E%3Cpath d='M7 9l9 15 9-15' fill='none' stroke='white' stroke-width='3.4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#070d1f; --panel:#0e1832; --card:#16244a; --card2:#1b2c58; --linha:#27396b;
+    --txt:#eef3ff; --mut:#8fa1cc; --azul:#5b8cff; --ambar:#ffb020; --laranja:#ff7a3d;
+    --verde:#2ecc8f; --verm:#ff4d5e; --roxo:#a98bff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:calc(100vw / 120)}              /* 16px num monitor 1920 de largura; escala com a TV */
+  body{background:var(--bg);color:var(--txt);font-family:"Segoe UI",Roboto,Arial,sans-serif;
+       height:100vh;overflow:hidden;display:grid;grid-template-rows:5.6rem 6.4rem 1fr 2.4rem;gap:.7rem;padding:.8rem 1rem .6rem}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  /* ---------- topo ---------- */
+  header{display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
+  .marca{display:flex;align-items:center;gap:1rem}
+  .logo{font-weight:800;letter-spacing:.18em;font-size:2.1rem;color:#fff}
+  .logo b{color:var(--azul)}
+  .titulo{border-left:2px solid var(--linha);padding-left:1rem;line-height:1.25}
+  .titulo small{display:block;font-size:.95rem;letter-spacing:.2em;color:var(--mut);font-weight:600}
+  .titulo strong{font-size:2rem;letter-spacing:.06em;font-weight:800}
+  .modo{display:inline-block;margin-left:.8rem;padding:.15rem .8rem;border-radius:99px;font-size:1.15rem;font-weight:800;letter-spacing:.12em;vertical-align:.25rem}
+  .modo.rec{background:rgba(91,140,255,.18);color:var(--azul);border:1px solid var(--azul)}
+  .modo.exp{background:rgba(255,176,32,.16);color:var(--ambar);border:1px solid var(--ambar)}
+  .relogio{display:flex;align-items:center;gap:1.4rem}
+  .data{text-align:right;line-height:1.15}
+  .data .d1{font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+  .data .d2{font-size:1.05rem;color:var(--mut)}
+  .hora{display:flex;gap:.28rem;align-items:center}
+  .dig{background:linear-gradient(#1a2a56 0 49%,#12204a 51% 100%);border:1px solid var(--linha);border-radius:.45rem;
+       width:2.9rem;height:4rem;display:grid;place-items:center;font-size:3rem;font-weight:700;position:relative}
+  .dig::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(0,0,0,.55)}
+  .sep{font-size:2.6rem;font-weight:700;color:var(--mut);animation:pisca 1s steps(2) infinite}
+  @keyframes pisca{50%{opacity:.15}}
+
+  /* ---------- indicadores ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:.8rem}
+  .kpi{background:var(--panel);border:1px solid var(--linha);border-left:.45rem solid var(--c,var(--azul));border-radius:.7rem;
+       padding:.5rem 1rem;display:flex;flex-direction:column;justify-content:center;min-width:0}
+  .kpi .r{font-size:.95rem;letter-spacing:.14em;color:var(--mut);font-weight:700;white-space:nowrap}
+  .kpi .v{font-size:3rem;font-weight:800;line-height:1;margin-top:.1rem}
+  .kpi .v small{font-size:1.2rem;color:var(--mut);font-weight:600;margin-left:.3rem}
+
+  /* ---------- quadro ---------- */
+  main{display:grid;gap:.8rem;min-height:0}
+  .col{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .col-h{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--linha);
+         border-top:.4rem solid var(--c);background:linear-gradient(rgba(255,255,255,.04),transparent)}
+  .col-h h2{font-size:1.25rem;letter-spacing:.1em;font-weight:800;color:var(--c)}
+  .col-h .n{font-size:2.1rem;font-weight:800;min-width:3rem;text-align:center;background:rgba(255,255,255,.07);border-radius:.5rem;padding:0 .6rem}
+  .col-b{flex:1;overflow:hidden;padding:.6rem;display:flex;flex-direction:column;gap:.55rem;min-height:0}
+  .vazio{margin:auto;color:var(--mut);font-size:1.15rem;letter-spacing:.12em;opacity:.6;text-align:center}
+
+  .card{background:var(--card);border:1px solid var(--linha);border-left:.35rem solid var(--c);border-radius:.6rem;padding:.6rem .8rem;flex:none}
+  .card .t{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+  .card .tr{font-size:1.55rem;font-weight:800;line-height:1.1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-transform:uppercase;overflow-wrap:anywhere}
+  .card .tp{font-size:1.5rem;font-weight:800;white-space:nowrap}
+  .card .cl{font-size:1.1rem;color:#c5d2f5;margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card .mt{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem;align-items:center;font-size:1rem;color:var(--mut)}
+  .chip{background:rgba(255,255,255,.09);border-radius:.35rem;padding:.05rem .5rem;color:var(--txt);font-weight:700;letter-spacing:.04em}
+  .chip.doca{background:var(--c);color:#06101f}
+  .placa{font-family:Consolas,"Courier New",monospace;font-weight:700;color:var(--txt);letter-spacing:.08em;border:1px solid var(--linha);border-radius:.3rem;padding:0 .4rem}
+  .card.ok .tp{color:var(--verde)} .card.atencao .tp{color:var(--ambar)}
+  .card.critico{background:#3a1626;border-color:var(--verm)} .card.critico .tp{color:var(--verm);animation:pisca 1s steps(2) infinite}
+  .card.ontem::after{content:"DIA ANTERIOR";display:inline-block;margin-top:.35rem;font-size:.8rem;letter-spacing:.12em;color:var(--verm);font-weight:800}
+  .card.novo{animation:entra 1.2s ease-out}
+  @keyframes entra{0%{box-shadow:0 0 0 .35rem var(--c);transform:scale(1.03)}100%{box-shadow:none;transform:none}}
+  .concl .card{padding:.4rem .7rem;background:#102a33}
+  .concl .tr{font-size:1.2rem} .concl .tp{font-size:1.05rem;color:var(--verde)}
+  .concl .cl{font-size:.95rem}
+
+  /* ---------- rodapé ---------- */
+  footer{display:flex;justify-content:space-between;align-items:center;font-size:1.05rem;color:var(--mut);gap:1rem;white-space:nowrap}
+  footer b{color:var(--txt)} footer .meio{overflow:hidden;text-overflow:ellipsis;flex:1;text-align:center}
+  .st{display:inline-flex;align-items:center;gap:.5rem}
+  .led{width:.8rem;height:.8rem;border-radius:50%;background:var(--verde);box-shadow:0 0 .6rem var(--verde)}
+  .led.off{background:var(--verm);box-shadow:0 0 .6rem var(--verm);animation:pisca 1s steps(2) infinite}
+  .led.demo{background:var(--roxo);box-shadow:0 0 .6rem var(--roxo)}
+  #som{cursor:pointer;padding:.1rem .8rem;border-radius:99px;border:1px solid var(--linha);background:var(--panel);color:var(--txt);font:inherit}
+  #som.mudo{border-color:var(--verm);color:var(--verm);font-weight:800;animation:pisca 1.4s steps(2) infinite}
+
+  /* ---------- chamada ---------- */
+  #chamada{position:fixed;inset:0;display:none;place-items:center;z-index:50;background:rgba(3,7,18,.9);backdrop-filter:blur(6px)}
+  #chamada.on{display:grid}
+  .ch{width:88vw;text-align:center;border-radius:2rem;padding:3.4rem 3rem;background:linear-gradient(160deg,#1a3a8f,#0c1c4a 70%);
+      border:.35rem solid var(--c);box-shadow:0 0 6rem var(--c);animation:pulso 1.4s ease-in-out infinite}
+  @keyframes pulso{50%{box-shadow:0 0 1.5rem var(--c)}}
+  .ch .e{font-size:2.4rem;letter-spacing:.3em;font-weight:800;color:var(--c)}
+  .ch .tr{font-size:7.2rem;font-weight:900;line-height:1.02;margin:1.2rem 0 .8rem;text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere}
+  .ch .cl{font-size:3rem;color:#d3defa;font-weight:600}
+  .ch .ib{display:flex;justify-content:center;gap:1.4rem;margin-top:2rem;flex-wrap:wrap}
+  .ch .ib span{font-size:2.6rem;font-weight:800;background:rgba(255,255,255,.12);padding:.2rem 1.2rem;border-radius:.8rem}
+  .ch .ib .doca{background:var(--c);color:#06101f}
+  .ch .fila{margin-top:1.6rem;font-size:1.5rem;color:var(--mut);letter-spacing:.1em}
+
+  #erro{position:fixed;left:50%;transform:translateX(-50%);bottom:3.4rem;background:#3a1626;border:1px solid var(--verm);color:#ffd7dc;padding:.5rem 1.4rem;border-radius:.6rem;font-size:1.1rem;display:none;z-index:40}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="marca">
+    <div class="logo">VIX<b>LOG</b></div>
+    <div class="titulo"><small>TORRE DE CONTROLE</small><strong id="tit">RECEBIMENTO</strong><span id="modo" class="modo rec">MANHÃ</span></div>
+  </div>
+  <div class="relogio">
+    <div class="data"><div class="d1" id="d1"></div><div class="d2" id="d2"></div></div>
+    <div class="hora tnum" id="hora"></div>
+  </div>
+</header>
+
+<section class="kpis" id="kpis"></section>
+<main id="quadro"></main>
+
+<footer>
+  <span class="st"><span class="led" id="led"></span><span id="estado">conectando…</span></span>
+  <span class="meio" id="meio"></span>
+  <button id="som" class="mudo" title="Clique para ativar/testar o som">🔇 SOM DESLIGADO — clique</button>
+</footer>
+
+<div id="chamada"></div>
+<div id="erro"></div>
+
+<script src="config.js"></script>
+<script>
+/* =====================================================================
+   CONFIGURAÇÃO — o endereço do proxy fica em config.js; o token vai na URL (?t=...)
+   e é lembrado neste navegador. Outros parâmetros úteis na URL:
+     ?demo            dados de demonstração (sem Bitrix24)
+     ?modo=rec|exp    força o quadro (padrão: automático por horário)
+     ?virada=12       hora em que o quadro passa de Recebimento para Expedição
+     ?mudo            não toca som
+   Teclas: R = recebimento · E = expedição · A = automático · T = testar chamada
+   ===================================================================== */
+const CFG = Object.assign({
+  api: '',                 // URL do proxy (Cloudflare Worker)
+  intervalo: 20,           // segundos entre atualizações
+  viradaHora: 12,          // antes disso: recebimento; depois: expedição
+  atencaoMin: 30,          // veículo esperando há mais de X min → amarelo
+  criticoMin: 60,          // há mais de X min → vermelho piscando
+  chamar: ['apresentou'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
+  chamadaSeg: 12,          // quanto tempo a chamada fica na tela
+  maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
+  falar: true,             // voz "Transportadora X, cliente Y, se apresentou"
+}, window.TORRE_CONFIG || {});
+
+const Q = new URLSearchParams(location.search);
+const DEMO = Q.has('demo');
+if (Q.get('api')) CFG.api = Q.get('api');
+if (Q.get('virada')) CFG.viradaHora = +Q.get('virada');
+let TOKEN = Q.get('t') || ''; const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+if (TOKEN) lsSet('torre_t', TOKEN); else TOKEN = lsGet('torre_t') || '';
+if (Q.get('t') || Q.get('api')) history.replaceState(null,'',location.pathname + (DEMO?'?demo':'')); // tira o token da barra de endereço
+
+/* ---------- etapas e quadros ---------- */
+const ETAPA = {
+  agendado:        {nome:'AGENDADO',            cor:'#5b8cff'},
+  apresentou:      {nome:'VEÍCULO SE APRESENTOU', cor:'#ffb020'},
+  aguardando_doca: {nome:'AGUARDANDO DOCA',     cor:'#ff7a3d'},
+  em_andamento:    {nome:'EM RECEBIMENTO',      cor:'#a98bff'},
+  concluido:       {nome:'RECEBIMENTO CONCLUÍDO', cor:'#2ecc8f'},
+};
+const QUADROS = {
+  rec: { titulo:'RECEBIMENTO', rotulo:'MANHÃ', verbo:'recebimento',
+         colunas:['agendado','apresentou','aguardando_doca','em_andamento','concluido'], grid:'1.05fr 1fr 1fr 1fr .85fr',
+         nomes:{em_andamento:'EM RECEBIMENTO',concluido:'CONCLUÍDOS'} },
+  exp: { titulo:'EXPEDIÇÃO', rotulo:'TARDE', verbo:'expedição',
+         colunas:['apresentou','aguardando_doca','em_andamento','concluido'], grid:'1fr 1fr 1fr .9fr',
+         nomes:{em_andamento:'EM EXPEDIÇÃO',concluido:'CONCLUÍDAS'} },
+};
+
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const SP = 'America/Sao_Paulo';
+const parte = (d, o) => new Intl.DateTimeFormat('pt-BR', {timeZone:SP, ...o}).format(d);
+const quando = s => s ? new Date(String(s).replace(' ','T') + '-03:00') : null;   // horários do Bitrix24 = Brasília
+const hhmm = s => { const d = quando(s); return d ? parte(d,{hour:'2-digit',minute:'2-digit',hour12:false}) : ''; };
+const dur = ms => { const m = Math.max(0, Math.floor(ms/60000)); return m >= 60 ? `${Math.floor(m/60)}h${pad(m%60)}` : `${m} min`; };
+const mmss = ms => { const t = Math.max(0, Math.floor(ms/1000)); const h=Math.floor(t/3600), m=Math.floor(t%3600/60), s=t%60; return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`; };
+const agoraSP = () => new Date();
+const horaSP = () => +parte(agoraSP(),{hour:'2-digit',hour12:false}) % 24;
+const curto = s => String(s||'').replace(/\b(LTDA|EIRELI|S\.?\/?A\.?|ME|EPP)\b\.?/gi,'').replace(/\s+/g,' ').trim().split(' ').slice(0,5).join(' ');
+const primeiroNome = s => String(s||'').trim().split(/\s+/)[0] || '';
+const bonito = s => String(s||'').replace(/\s+/g,' ').trim();
+
+/* ---------- estado ---------- */
+let DADOS = {itens:[], futuros:{}, hoje:''}, MODO_FORCADO = Q.get('modo') || '', ULTIMO_OK = null, FALHA_DESDE = null;
+const MODO = () => (MODO_FORCADO==='rec'||MODO_FORCADO==='exp') ? MODO_FORCADO : (horaSP() < CFG.viradaHora ? 'rec' : 'exp');
+let MODO_ATUAL = '';
+
+/* ---------- relógio ---------- */
+function relogio(){
+  const d = agoraSP();
+  const h = parte(d,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).split(':');
+  $('#hora').innerHTML = h.map((x,i)=> (i?'<span class="sep">:</span>':'') + [...x].map(c=>`<span class="dig">${c}</span>`).join('')).join('');
+  $('#d1').textContent = parte(d,{weekday:'long'});
+  $('#d2').textContent = parte(d,{day:'2-digit',month:'long',year:'numeric'});
+  document.querySelectorAll('[data-desde]').forEach(el=>{
+    const ms = Date.now() - (+el.dataset.desde);
+    el.textContent = mmss(ms);
+    const card = el.closest('.card'); if (!card) return;
+    const min = ms/60000;
+    card.classList.toggle('critico', min >= CFG.criticoMin);
+    card.classList.toggle('atencao', min >= CFG.atencaoMin && min < CFG.criticoMin);
+    card.classList.toggle('ok', min < CFG.atencaoMin);
+  });
+  const modo = MODO(); if (modo !== MODO_ATUAL) montar(modo);
+}
+
+/* ---------- montagem do quadro ---------- */
+function montar(modo){
+  MODO_ATUAL = modo; const q = QUADROS[modo];
+  $('#tit').textContent = q.titulo; const m = $('#modo'); m.textContent = q.rotulo; m.className = 'modo ' + modo;
+  document.title = 'Torre de Controle · ' + q.titulo;
+  const quadro = $('#quadro'); quadro.style.gridTemplateColumns = q.grid;
+  quadro.innerHTML = q.colunas.map(k=>{
+    const e = ETAPA[k];
+    return `<section class="col ${k==='concluido'?'concl':''}" style="--c:${e.cor}" data-k="${k}">
+      <div class="col-h"><h2>${esc(q.nomes[k]||e.nome)}</h2><span class="n tnum" data-n>0</span></div>
+      <div class="col-b" data-b></div></section>`;
+  }).join('');
+  desenhar();
+}
+
+function filtrar(modo){ return DADOS.itens.filter(i=>i.funil===modo); }
+
+function cartao(i, k){
+  const cor = ETAPA[k].cor;
+  const transp = bonito(i.transportadora).toUpperCase() || 'TRANSPORTADORA A DEFINIR';
+  const cli = curto(i.cliente) || bonito(i.cliente);
+  const qt = i.qtd ? `${esc(i.qtd)} ${i.tipo==='Paletes'?'palete'+(+i.qtd===1?'':'s'):(+i.qtd===1?'volume':'volumes')}` : '';
+  let topo = '', extra = '';
+  if (k==='apresentou' || k==='aguardando_doca'){
+    const t0 = quando(i.chegada) || quando(i.movido);
+    topo = `<span class="tp tnum" data-desde="${t0?t0.getTime():Date.now()}">--:--</span>`;
+    extra = (i.chegada?`<span>chegou ${hhmm(i.chegada)}</span>`:'');
+  } else if (k==='em_andamento'){
+    const t0 = quando(i.inicio) || quando(i.movido) || quando(i.chegada);
+    topo = `<span class="tp tnum" data-desde="${t0?t0.getTime():Date.now()}">--:--</span>`;
+    extra = (i.conferente?`<span>conf. ${esc(primeiroNome(i.conferente))}</span>`:'');
+  } else if (k==='concluido'){
+    const a = quando(i.chegada), b = quando(i.fim) || quando(i.movido);
+    topo = `<span class="tp tnum">${a&&b?dur(b-a):hhmm(i.fim||i.movido)}</span>`;
+    extra = `<span>${a?hhmm(i.chegada)+' → ':''}${hhmm(i.fim||i.movido)}</span>`;
+  } else {
+    extra = i.obs ? `<span>${esc(i.obs.slice(0,34))}</span>` : '';
+  }
+  const doca = i.doca ? `<span class="chip doca">DOCA ${esc(i.doca)}</span>` : '';
+  const placa = (i.placa && k!=='concluido' && k!=='agendado') ? `<span class="placa">${esc(i.placa)}</span>` : '';
+  return `<div class="card ${i.doDiaAnterior?'ontem':''}" style="--c:${cor}" data-id="${i.id}-${k}">
+      <div class="t"><span class="tr">${esc(transp)}</span>${topo}</div>
+      <div class="cl">${esc(cli)}</div>
+      <div class="mt">${doca}${placa}${qt?`<span>${qt}</span>`:''}${extra}</div></div>`;
+}
+
+const CONHECIDOS = new Set();
+function desenhar(){
+  const modo = MODO_ATUAL, q = QUADROS[modo], itens = filtrar(modo);
+  const por = k => itens.filter(i=>i.etapa===k);
+  q.colunas.forEach(k=>{
+    const sec = document.querySelector(`.col[data-k="${k}"]`); if(!sec) return;
+    let lista = por(k);
+    if (k==='concluido') lista = lista.sort((a,b)=> (b.fim||b.movido||'').localeCompare(a.fim||a.movido||''));
+    else if (k==='agendado') lista = lista.sort((a,b)=> (a.transportadora||'').localeCompare(b.transportadora||''));
+    else lista = lista.sort((a,b)=> (a.chegada||a.movido||'').localeCompare(b.chegada||b.movido||''));
+    sec.querySelector('[data-n]').textContent = lista.length;
+    const corpo = sec.querySelector('[data-b]');
+    corpo.innerHTML = lista.length ? lista.map(i=>cartao(i,k)).join('') : `<div class="vazio">— NENHUM —</div>`;
+    corpo.querySelectorAll('.card').forEach(c=>{ if(!CONHECIDOS.has(c.dataset.id) && CONHECIDOS.size) c.classList.add('novo'); });
+  });
+  itens.forEach(i=>CONHECIDOS.add(i.id+'-'+i.etapa));
+  kpis(modo, itens); rodape(modo); relogio();
+}
+
+function kpis(modo, itens){
+  const n = k => itens.filter(i=>i.etapa===k).length;
+  const concl = itens.filter(i=>i.etapa==='concluido');
+  const ciclos = concl.map(i=>{const a=quando(i.chegada),b=quando(i.fim);return a&&b&&b>a?b-a:null}).filter(Boolean);
+  const medio = ciclos.length ? dur(ciclos.reduce((s,x)=>s+x,0)/ciclos.length) : '—';
+  const naoCump = n('nao_cumprido') + n('nao_realizado');
+  let t;
+  if (modo==='rec'){
+    const total = itens.filter(i=>!['incorreto','nao_realizado'].includes(i.etapa)).length;
+    const pct = total ? Math.round(100*concl.length/total) : 0;
+    t = [
+      ['TOTAL DO DIA', total, '', '#5b8cff'],
+      ['AGUARDANDO CHEGADA', n('agendado'), '', '#5b8cff'],
+      ['NO PÁTIO', n('apresentou')+n('aguardando_doca'), '', '#ffb020'],
+      ['EM RECEBIMENTO', n('em_andamento'), '', '#a98bff'],
+      ['CONCLUÍDOS', concl.length, `<small>${pct}%</small>`, '#2ecc8f'],
+      ['NÃO COMPARECERAM', naoCump, '', naoCump? '#ff4d5e':'#8fa1cc'],
+    ];
+  } else {
+    const total = itens.length;
+    t = [
+      ['TOTAL DO DIA', total, '', '#5b8cff'],
+      ['SE APRESENTARAM', n('apresentou'), '', '#ffb020'],
+      ['AGUARDANDO DOCA', n('aguardando_doca'), '', '#ff7a3d'],
+      ['EM EXPEDIÇÃO', n('em_andamento'), '', '#a98bff'],
+      ['CONCLUÍDAS', concl.length, '', '#2ecc8f'],
+      ['TEMPO MÉDIO', medio, '', '#5b8cff'],
+    ];
+  }
+  $('#kpis').innerHTML = t.map(([r,v,s,c])=>`<div class="kpi" style="--c:${c}"><span class="r">${r}</span><span class="v tnum">${v}${s}</span></div>`).join('');
+}
+
+function rodape(modo, ){
+  const outro = modo==='rec'?'exp':'rec', its = filtrar(outro);
+  const c = k => its.filter(i=>i.etapa===k).length;
+  const nome = outro==='rec'?'Recebimento':'Expedição';
+  const partes = [`<b>${nome}</b>: ${c('apresentou')+c('aguardando_doca')} no pátio · ${c('em_andamento')} em operação · ${c('concluido')} concluídos`];
+  const fut = Object.entries(DADOS.futuros||{}).sort(([a],[b])=>a.localeCompare(b)).slice(0,3);
+  if (fut.length) partes.push('<b>Próximos agendamentos</b>: ' + fut.map(([d,n])=>`${d.slice(8,10)}/${d.slice(5,7)} → ${n}`).join(' · '));
+  $('#meio').innerHTML = partes.join('   |   ');
+}
+
+/* ---------- rolagem automática quando há mais cartões do que cabe ---------- */
+const ROLA = new WeakMap(); let tAnt = performance.now();
+function rolar(t){
+  const dt = (t - tAnt)/1000; tAnt = t;
+  document.querySelectorAll('[data-b]').forEach(el=>{
+    const max = el.scrollHeight - el.clientHeight;
+    let s = ROLA.get(el); if(!s){ s = {dir:1, pausa:3}; ROLA.set(el,s); }
+    if (max < 4){ el.scrollTop = 0; return; }
+    if (s.pausa > 0){ s.pausa -= dt; return; }
+    el.scrollTop += s.dir * 28 * dt;
+    if (el.scrollTop >= max-1){ s.dir=-1; s.pausa=3; } else if (el.scrollTop <= 0){ s.dir=1; s.pausa=3; }
+  });
+  requestAnimationFrame(rolar);
+}
+
+/* =====================================================================
+   SOM E CHAMADA
+   ===================================================================== */
+let AC = null, SOM_OK = false, VOZ = null;
+function vozes(){ const v = speechSynthesis.getVoices(); VOZ = v.find(x=>/pt-BR/i.test(x.lang)) || v.find(x=>/^pt/i.test(x.lang)) || null; }
+if ('speechSynthesis' in window){ vozes(); speechSynthesis.onvoiceschanged = vozes; }
+
+function ativarSom(){
+  try{ AC = AC || new (window.AudioContext||window.webkitAudioContext)(); AC.resume(); }catch(e){}
+  SOM_OK = !!AC && AC.state === 'running';
+  if ('speechSynthesis' in window){ try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){} }
+  atualizaBotaoSom();
+}
+function atualizaBotaoSom(){
+  const b = $('#som');
+  if (Q.has('mudo')){ b.className=''; b.textContent='🔇 mudo (parâmetro)'; return; }
+  SOM_OK = !!AC && AC.state === 'running';
+  b.className = SOM_OK ? '' : 'mudo';
+  b.textContent = SOM_OK ? '🔊 som ativo — clique para testar' : '🔇 SOM DESLIGADO — clique';
+}
+function nota(freq, ini, dur, vol=.5){
+  const o = AC.createOscillator(), g = AC.createGain(); o.type='sine'; o.frequency.value=freq;
+  o.connect(g); g.connect(AC.destination);
+  const t = AC.currentTime + ini; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.02); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.start(t); o.stop(t+dur+.05);
+}
+function campainha(){            // "ding-dong" duplo, estilo chamada de senha
+  if (!AC || Q.has('mudo')) return;
+  for (let r=0;r<2;r++){ nota(880, r*1.1, .8); nota(659.25, r*1.1+.45, 1.0); }
+}
+function falar(txt){
+  if (!CFG.falar || Q.has('mudo') || !('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; if(VOZ) u.voice=VOZ; u.rate=.92; u.volume=1; speechSynthesis.speak(u); }catch(e){}
+}
+
+const FILA = []; let EM_TELA = false;
+const TXT_CHAMADA = {
+  apresentou:      (q)=>`VEÍCULO SE APRESENTOU · ${q.verbo.toUpperCase()}`,
+  aguardando_doca: (q)=>`AGUARDANDO DOCA · ${q.verbo.toUpperCase()}`,
+  em_andamento:    (q)=>`DIRIJA-SE À DOCA · ${q.verbo.toUpperCase()}`,
+};
+function chamar(item){ FILA.push(item); if(!EM_TELA) proxima(); }
+function proxima(){
+  const i = FILA.shift(); const box = $('#chamada');
+  if (!i){ EM_TELA=false; box.classList.remove('on'); return; }
+  EM_TELA = true;
+  const q = QUADROS[i.funil], cor = ETAPA[i.etapa].cor;
+  const transp = bonito(i.transportadora).toUpperCase() || 'TRANSPORTADORA';
+  const qt = i.qtd ? `${i.qtd} ${i.tipo==='Paletes'?'palete'+(+i.qtd===1?'':'s'):(+i.qtd===1?'volume':'volumes')}` : '';
+  box.style.setProperty('--c', cor);
+  box.innerHTML = `<div class="ch" style="--c:${cor}">
+      <div class="e">${esc(TXT_CHAMADA[i.etapa](q))}</div>
+      <div class="tr">${esc(transp)}</div>
+      <div class="cl">${esc(curto(i.cliente)||bonito(i.cliente))}</div>
+      <div class="ib">${i.doca?`<span class="doca">DOCA ${esc(i.doca)}</span>`:''}${i.placa?`<span>${esc(i.placa)}</span>`:''}${qt?`<span>${esc(qt)}</span>`:''}</div>
+      ${FILA.length?`<div class="fila">+ ${FILA.length} na fila de chamada</div>`:''}</div>`;
+  box.classList.add('on');
+  campainha();
+  const cli = curto(i.cliente) || '';
+  const frase = i.etapa==='em_andamento'
+      ? `Atenção. Transportadora ${transp.toLowerCase()}, cliente ${cli.toLowerCase()}. Dirija-se à doca ${i.doca||''}.`
+      : `Atenção. Transportadora ${transp.toLowerCase()}, cliente ${cli.toLowerCase()}, se apresentou.`;
+  setTimeout(()=>falar(frase), 2400);
+  setTimeout(proxima, CFG.chamadaSeg*1000);
+}
+
+/* ---- detecta quem mudou de etapa desde a última leitura ---- */
+let VISTOS = null;
+function detectar(){
+  const chave = i => `${i.id}:${i.etapa}`;
+  const hoje = DADOS.hoje || '';
+  const salvo = (()=>{ try{ const j = JSON.parse(lsGet('torre_vistos')||'null'); return j && j.dia===hoje ? new Set(j.k) : null; }catch(e){return null} })();
+  const eventos = DADOS.itens.filter(i=>CFG.chamar.includes(i.etapa));
+  if (VISTOS === null){
+    VISTOS = salvo || new Set(DADOS.itens.map(chave));      // 1ª vez no dia: não chama o que já estava lá
+  } else {
+    for (const i of eventos){
+      if (VISTOS.has(chave(i))) continue;
+      const t = quando(i.movido); const idadeMin = t ? (Date.now()-t)/60000 : 0;
+      if (idadeMin <= CFG.maxAtrasoChamadaMin) chamar(i);
+    }
+    DADOS.itens.forEach(i=>VISTOS.add(chave(i)));
+  }
+  lsSet('torre_vistos', JSON.stringify({dia:hoje, k:[...VISTOS]}));
+}
+
+/* =====================================================================
+   DADOS
+   ===================================================================== */
+async function carregar(){
+  if (DEMO) return simular();
+  if (!CFG.api) throw new Error('Falta configurar o endereço do proxy (config.js).');
+  const r = await fetch(`${CFG.api}${CFG.api.includes('?')?'&':'?'}t=${encodeURIComponent(TOKEN)}`, {cache:'no-store'});
+  if (r.status === 401) throw new Error('Token da torre inválido — abra a página com ?t=SEU_TOKEN');
+  if (!r.ok) throw new Error('Proxy respondeu ' + r.status);
+  return r.json();
+}
+async function ciclo(){
+  try{
+    const d = await carregar(); DADOS = d; ULTIMO_OK = new Date(); FALHA_DESDE = null;
+    $('#erro').style.display='none';
+    if (MODO_ATUAL) desenhar(); detectar();
+  }catch(e){
+    FALHA_DESDE = FALHA_DESDE || new Date();
+    $('#erro').textContent = '⚠ ' + (e.message||e); $('#erro').style.display='block';
+  }
+  const led = $('#led'), st = $('#estado');
+  if (DEMO){ led.className='led demo'; st.textContent = 'DEMONSTRAÇÃO — dados fictícios'; }
+  else if (FALHA_DESDE){ led.className='led off'; st.textContent = 'SEM CONEXÃO desde ' + parte(FALHA_DESDE,{hour:'2-digit',minute:'2-digit',hour12:false}) + (ULTIMO_OK?` · últimos dados ${parte(ULTIMO_OK,{hour:'2-digit',minute:'2-digit',hour12:false})}`:''); }
+  else { led.className='led'; st.textContent = 'atualizado às ' + parte(ULTIMO_OK,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); }
+}
+
+/* =====================================================================
+   DEMONSTRAÇÃO (dados fictícios, sem Bitrix24)
+   ===================================================================== */
+const SIM = {itens:null, prox:0};
+function simular(){
+  const agora = new Date();
+  const f = d => parte(d,{year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
+  const ts = d => f(d)+' '+parte(d,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const hoje = f(agora), min = m => ts(new Date(agora.getTime()-m*60000));
+  const modo = MODO();
+  if (!SIM.itens){
+    const T=['Expresso Litoral','Transcapixaba','LogES Cargas','Rodovale','Frota Serrana','Costa Azul Log','Norte Capixaba','Via Sul Transportes','Cargo Rápido','Atlântico Log'];
+    const C=['Cosméticos Aurora Ltda','Farma Vitória Distribuidora','Indústria Mar & Sol Ltda','Eletro Capixaba S/A','Química Santa Cruz Ltda','Papelaria Central Eireli','Brasil Cabos Ltda','Higiene Plus Comércio Ltda'];
+    let id=9000; const mk=(funil,etapa,mAtras,extra={})=>({id:id++,funil,etapa,cliente:C[id%C.length],transportadora:T[(id*3)%T.length],
+        placa:'ABC'+(1000+id%9000).toString().replace(/^(\d)/,'$1D').slice(0,4),motorista:'',doca:'',dataAg:hoje,chegada:'',inicio:'',fim:'',movido:min(mAtras),
+        conferente:'',tipo:id%2?'Paletes':'Volumes',qtd:String(4+id%25),obs:'',doDiaAnterior:false,...extra});
+    SIM.mk = mk;
+    SIM.itens = [
+      ...Array.from({length:6},()=>mk('rec','agendado',600)),
+      mk('rec','apresentou',12,{chegada:min(12)}), mk('rec','apresentou',41,{chegada:min(41)}),
+      mk('rec','aguardando_doca',35,{chegada:min(35)}), mk('rec','aguardando_doca',72,{chegada:min(72)}),
+      mk('rec','em_andamento',20,{chegada:min(50),inicio:min(20),doca:'02',conferente:'Mateus Santos'}), mk('rec','em_andamento',8,{chegada:min(30),inicio:min(8),doca:'05',conferente:'Greziele Nascimento'}),
+      ...Array.from({length:5},(_,k)=>mk('rec','concluido',60+k*30,{chegada:min(140+k*30),fim:min(60+k*30),doca:'0'+(1+k%4)})),
+      mk('rec','nao_cumprido',100),
+      mk('exp','apresentou',6,{chegada:min(6)}), mk('exp','aguardando_doca',18,{chegada:min(18)}),
+      mk('exp','em_andamento',14,{chegada:min(40),inicio:min(14),doca:'03'}),
+      ...Array.from({length:9},(_,k)=>mk('exp','concluido',30+k*22,{chegada:min(90+k*22),fim:min(30+k*22),doca:'0'+(1+k%5)})),
+    ];
+    SIM.t0 = Date.now(); SIM.passo = 0;
+  }
+  // a cada ~25 s alguém avança de etapa (para ver a chamada acontecer)
+  const passos = Math.floor((Date.now()-SIM.t0)/25000);
+  while (SIM.passo < passos){
+    SIM.passo++;
+    const ordem = ['agendado','apresentou','aguardando_doca','em_andamento','concluido'];
+    const alvo = SIM.itens.find(i=>i.funil===modo && i.etapa==='agendado') || SIM.itens.find(i=>i.funil===modo && i.etapa==='apresentou');
+    if (alvo){
+      const e = ordem[ordem.indexOf(alvo.etapa)+1]; alvo.etapa = e; alvo.movido = min(0);
+      if (e==='apresentou') alvo.chegada = min(0);
+      if (e==='em_andamento'){ alvo.inicio = min(0); alvo.doca = '0'+(1+SIM.passo%5); alvo.conferente='Mateus Santos'; }
+    }
+  }
+  return {geradoEm:agora.toISOString(), hoje, itens:SIM.itens, futuros:{[f(new Date(agora.getTime()+864e5))]:11,[f(new Date(agora.getTime()+2*864e5))]:6}};
+}
+
+/* =====================================================================
+   INÍCIO
+   ===================================================================== */
+document.addEventListener('keydown', e=>{
+  const k = e.key.toLowerCase();
+  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''}
+  else if (k==='t'){ ativarSom(); const it = (DADOS.itens.find(i=>i.etapa==='apresentou')) || {funil:MODO(),etapa:'apresentou',transportadora:'Transportadora Teste',cliente:'Cliente Teste Ltda',doca:'01',placa:'TST1A23',tipo:'Paletes',qtd:'10'}; chamar(it); }
+  relogio();
+});
+$('#som').addEventListener('click', ()=>{ ativarSom(); if(SOM_OK){ campainha(); falar('Som da torre de controle ativo.'); } });
+document.addEventListener('click', ()=>{ if(!SOM_OK) ativarSom(); }, {once:false});
+
+function iniciar(){
+  montar(MODO()); relogio(); setInterval(relogio, 1000);
+  ciclo(); setInterval(ciclo, CFG.intervalo*1000);
+  requestAnimationFrame(rolar); setInterval(atualizaBotaoSom, 2000);
+}
+// tenta liberar o som sozinho (funciona se o Chrome foi aberto com --autoplay-policy=no-user-gesture-required)
+try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+if (AC && AC.state === 'running') { SOM_OK = true; iniciar(); atualizaBotaoSom(); }
+else if (AC) { AC.resume().then(()=>{ SOM_OK = AC.state==='running'; }).catch(()=>{}); iniciar(); setTimeout(atualizaBotaoSom,500); }
+else iniciar();
+</script>
+</body>
+</html>
