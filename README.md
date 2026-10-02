@@ -87,3 +87,9 @@ A TV consulta a cada 4 s; o aviso aparece em até ~5 s (às vezes o KV demora ma
 - Na TV do pátio ele entra sozinho a cada 120 s por 24 s (`kpiCadaSeg` / `kpiSeg` no config.js; `kpiCadaSeg: 0` desliga), passando pelas 3 abas. Não entra se houver veículo "se apresentou" ou "aguardando doca" no pátio, e a chamada sempre aparece por cima. Tecla **K** abre/fecha na hora.
 - Precisa do Worker atualizado (rota `/kpi`): colar o `proxy/worker.js` novo e **Deploy**.
 - Regras: concluído % e no-show % são calculados sobre os agendamentos já resolvidos (concluídos + no-show); no-show = não cumprido/não realizado + agendado que passou do dia (ou das 12h, se for hoje). Tempo médio = chegada → conclusão (lançamentos acima de 24 h são ignorados).
+
+## Voz da chamada (frases curtas)
+A TV fala só o primeiro nome da transportadora e do cliente, e agora chama em duas etapas (`chamar: ['apresentou','em_andamento']`):
+- Chegada: "Jomed chegou, para a Semina."
+- Recebimento em andamento: "Jomed, doca 3, descarregando a Semina." (Expedição: "carregando a Delly.")
+A voz escolhida é a mais natural do navegador (Edge: vozes "Natural"; Chrome: "Google português do Brasil"). Para forçar uma: `?voz=Francisca` no endereço ou `voz: 'Francisca'` no config.js. Tecla **T** testa as duas frases em sequência.
