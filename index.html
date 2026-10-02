@@ -471,7 +471,8 @@ function campainha(){            // "ding-dong" duplo, estilo chamada de senha
   for (let r=0;r<2;r++){ nota(880, r*1.1, .8); nota(659.25, r*1.1+.45, 1.0); }
 }
 let FALA_ERR = '', DIAG_T = 0;
-function diag(extra){
+function diag(extra, forcar){
+  if (!forcar && !FALA_ERR) return;
   const d = document.getElementById('diag'); if (!d) return;
   const n = ('speechSynthesis' in window) ? speechSynthesis.getVoices().length : -1;
   const pt = ('speechSynthesis' in window) ? speechSynthesis.getVoices().filter(x=>/^pt/i.test(x.lang)).map(x=>x.name+(x.localService?'(local)':'(online)')).join(', ') : '';
@@ -555,16 +556,16 @@ function kpiTick(){
 setInterval(kpiTick, 1000);
 
 /* ---- chamada manual: a equipe aperta CHAMAR na página chamar.html e a TV toca de novo ---- */
-let SEQ_MANUAL = +(lsGet('torre_seq')||0);
+let SEQ_MANUAL = +(lsGet('torre_seq')||0), BASE_OK = false;
 async function ouvirManual(){
   if (DEMO || !CFG.api) return;
   try{
     const r = await fetch(`${CFG.api.replace(/\/$/,'')}/chamada?t=${encodeURIComponent(TOKEN)}`, {cache:'no-store'});
     if (!r.ok) return; const c = await r.json();
+    const primeira = !BASE_OK; BASE_OK = true;
     if (!c.seq || c.seq === SEQ_MANUAL) return;
     SEQ_MANUAL = c.seq; lsSet('torre_seq', String(c.seq));
-    const srv = Date.parse(r.headers.get('date')||'') || Date.now();   // hora do servidor (não depende do relógio da TV)
-    if (srv - c.seq > 90*1000) return;                 // chamada velha (TV reiniciada): ignora
+    if (primeira) return;                               // 1ª leitura da página: só marca a linha de base (não repete chamada antiga)
     const i = Object.assign({}, c.item);
     i.etapa = TXT_CHAMADA[i.etapa] ? i.etapa : 'apresentou';
     if (!ETAPA[i.etapa]) return; chamar(i);
@@ -687,7 +688,7 @@ function simular(){
    ===================================================================== */
 document.addEventListener('keydown', e=>{
   const k = e.key.toLowerCase();
-  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='k'){ KPI_ON ? kpiFechar() : kpiAbrir(true); } else if (k==='p'){ KPI_ON ? kpiFechar() : kpiAbrir(true, 'amanha'); } else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
+  if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='k'){ KPI_ON ? kpiFechar() : kpiAbrir(true); } else if (k==='d'){ diag('', true); } else if (k==='p'){ KPI_ON ? kpiFechar() : kpiAbrir(true, 'amanha'); } else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
   else if (k==='t'){ ativarSom(); TESTE_N++; const base = DADOS.itens.find(i=>i.etapa==='apresentou') || {funil:MODO(),transportadora:'Jomed Transportes',cliente:'Semina Industria e Comercio Ltda',doca:'03',placa:'TST1A23',tipo:'Paletes',qtd:'10'};
     chamar(Object.assign({}, base, {etapa: TESTE_N%2 ? 'apresentou' : 'em_andamento', doca: base.doca || '03'})); }
   relogio();
