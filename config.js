@@ -3,6 +3,6 @@
 window.TORRE_CONFIG = {
   api: 'https://torre-vixlog.ramon-011.workers.dev',
   // intervalo: 20,
-  // viradaHora: 12,              // a partir dessa hora o quadro vira Expedição
+  viradaHora: 14,                 // até essa hora: Recebimento; a partir dela: Expedição
   // chamar: ['apresentou'],      // etapas que tocam som: 'apresentou' | 'aguardando_doca' | 'em_andamento'
 };

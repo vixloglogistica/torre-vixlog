@@ -38,7 +38,7 @@ Crie um atalho do Chrome com o destino:
 O token fica gravado no navegador e some da barra de endereço. Se o som não tocar, clique uma vez na página (o botão no canto inferior direito mostra se o som está ativo).
 
 ## Como a tela se comporta
-- **Antes das 12h**: quadro de **Recebimento** — Agendado → Veículo se apresentou → Aguardando doca → Em recebimento → Concluídos. **A partir das 12h**: quadro de **Expedição**. Mudar a hora: `?virada=13`. Forçar: tecla **R** (recebimento), **E** (expedição), **A** (automático).
+- **Antes das 14h**: quadro de **Recebimento** — Agendado → Veículo se apresentou → Aguardando doca → Em recebimento → Concluídos. **A partir das 14h**: quadro de **Expedição**. Mudar a hora: `?virada=15`. Forçar: tecla **R** (recebimento), **E** (expedição), **A** (automático).
 - **Chamada**: quando um card entra em *Veículo se apresentou* (em qualquer um dos dois funis, mesmo que o quadro na tela seja o outro), a TV toca "ding-dong", abre uma tela cheia com transportadora, cliente, placa e quantidade, e fala o nome. Quem dispara é a própria mudança de etapa no Bitrix24, então não precisa de botão extra. Tecla **T** testa a chamada.
 - Para chamar também em *Aguardando doca* ou *Em recebimento* (ex.: "dirija-se à doca 2"), edite em `config.js`: `chamar: ['apresentou','em_andamento']`.
 - Tempo de espera do veículo no pátio fica amarelo após 30 min e vermelho piscando após 60 min (`atencaoMin`, `criticoMin`).
