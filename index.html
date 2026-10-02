@@ -700,8 +700,8 @@ function simular(){
 document.addEventListener('keydown', e=>{
   const k = e.key.toLowerCase();
   if (k==='r'){MODO_FORCADO='rec'} else if (k==='e'){MODO_FORCADO='exp'} else if (k==='a'){MODO_FORCADO=''} else if (k==='k'){ KPI_ON ? kpiFechar() : kpiAbrir(true); } else if (k==='d'){ diag('', true); } else if (k==='p'){ KPI_ON ? kpiFechar() : kpiAbrir(true, 'amanha'); } else if (k==='v'){ ESTILO = ESTILO==='painel'?'quadro':'painel'; montar(MODO()); }
-  else if (k==='t'){ ativarSom(); TESTE_N++; const base = DADOS.itens.find(i=>i.etapa==='apresentou') || {funil:MODO(),transportadora:'Jomed Transportes',cliente:'Semina Industria e Comercio Ltda',doca:'03',placa:'TST1A23',tipo:'Paletes',qtd:'10'};
-    chamar(Object.assign({}, base, {etapa: TESTE_N%2 ? 'apresentou' : 'em_andamento', doca: base.doca || '03'})); }
+  else if (k==='t'){ ativarSom(); TESTE_N++; const base = DADOS.itens.find(i=>i.funil===MODO() && i.etapa==='apresentou') || DADOS.itens.find(i=>i.funil===MODO()) || {funil:MODO(),transportadora:'Jomed Transportes',cliente:'Semina Industria e Comercio Ltda',doca:'03',placa:'TST1A23',tipo:'Paletes',qtd:'10'};
+    chamar(Object.assign({}, base, {funil:MODO(), etapa: TESTE_N%2 ? (MODO()==='exp'?'aguardando_doca':'apresentou') : 'em_andamento', doca: base.doca || '03'})); }
   relogio();
 });
 $('#som').addEventListener('click', ()=>{ ativarSom(); if(SOM_OK){ campainha(); falar('Som do controle de pátio ativo.'); } });
