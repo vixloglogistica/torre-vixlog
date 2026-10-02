@@ -178,7 +178,7 @@ const CFG = Object.assign({
   amanhaHora: 16,          // a partir dessa hora, a tela "Programação do dia seguinte" entra na rotação (0 desliga)
   amanhaSeg: 24,           // quanto tempo ela fica
   kpiSeg: 24,              // quanto tempo ele fica (divide entre Visão Geral / Recebimento / Expedição)
-  chamar: ['apresentou','em_andamento'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
+  chamar: ['apresentou','aguardando_doca','em_andamento'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
   maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
   falar: true,             // voz "Transportadora X, cliente Y, se apresentou"
@@ -497,7 +497,7 @@ function fraseChamada(i){
     const v = i.funil === 'exp' ? 'carregando' : 'descarregando';
     return [t, doca, c ? `${v} a ${c}` : v].filter(Boolean).join(', ') + '.';
   }
-  if (i.etapa === 'aguardando_doca') return `${t}, aguardando doca${c ? ', para a ' + c : ''}.`;
+  if (i.etapa === 'aguardando_doca') return `${t}, ${doca ? doca + ', ' : ''}aguardando doca${c ? ', para a ' + c : ''}.`;
   return `${t} chegou${c ? ', para a ' + c : ''}.`;
 }
 function chamar(item){ FILA.push(item); if(!EM_TELA) proxima(); }
