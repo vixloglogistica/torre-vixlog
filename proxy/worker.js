@@ -32,6 +32,7 @@ const UF = {
   conferente:      'UF_CRM_1780550996',
   fim:             'UF_CRM_1780551024',         // fim do recebimento
   fimExp:          'UF_CRM_1785335141626',      // fim da expedição
+  operacao:        '',                          // Tipo da Operação (Descarga | Crossdocking): vazio = detecta pelo valor
 };
 
 // ---------- etapas dos dois funis ----------
@@ -74,6 +75,17 @@ function nomeCliente(deal, uf, funil) {
     ? [limpa(uf[UF.clienteExp]), limpa(uf[UF.razaoSocial])]
     : [limpa(uf[UF.razaoSocial]), t.length >= 3 ? t[1] : '', limpa(uf[UF.clienteDigitado])];
   return lista.find(ok) || (/^preencher/i.test(t[0]) ? 'Sem identificação' : t[0]) || '—';
+}
+/** "Tipo da Operação" (Descarga | Crossdocking): acha a coluna pelo valor, em qualquer funil. Se souber o código UF, ponha em UF.operacao. */
+const OPS = { descarga: 'Descarga', crossdocking: 'Crossdocking' };
+function operacao(uf) {
+  const lista = UF.operacao ? [uf[UF.operacao]] : Object.entries(uf).filter(([k]) => /^UF_CRM/.test(k)).map(([, v]) => v);
+  for (const v of lista) {
+    const t = limpa(v).toLowerCase();
+    if (t === 'crossdocking' || t === 'cross docking' || t === 'cross-docking') return OPS.crossdocking;
+    if (t === 'descarga') return OPS.descarga;
+  }
+  return '';
 }
 function qtd(uf) {
   const tipo = limpa(uf[UF.tipoCarga]);
@@ -129,6 +141,7 @@ export function transformar(dealTab, ufTab, agora = new Date()) {
       conferente: limpa(uf[UF.conferente]),
       tipo: q.tipo, qtd: q.qtd,
       obs: limpa(uf[UF.observacao]).slice(0, 80),
+      operacao: operacao(uf),
       doDiaAnterior: veiculoNoPatio,
     });
   }
@@ -193,7 +206,7 @@ export default {
       const it = b && b.item ? b.item : {}, c = k => String(it[k] ?? '').slice(0, 120);
       const chamada = { seq: Date.now(), por: String(b.por || '').slice(0, 40),
         item: { id: c('id'), funil: c('funil') === 'exp' ? 'exp' : 'rec', etapa: c('etapa'), transportadora: c('transportadora'), cliente: c('cliente'),
-                placa: c('placa'), doca: c('doca'), tipo: c('tipo'), qtd: c('qtd') } };
+                placa: c('placa'), doca: c('doca'), tipo: c('tipo'), qtd: c('qtd'), operacao: c('operacao') } };
       await env.CHAMADAS.put('ultima', JSON.stringify(chamada), { expirationTtl: 3600 });
       return json({ ok: true, seq: chamada.seq });
     }

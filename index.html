@@ -67,6 +67,8 @@
   .card .mt{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem;align-items:center;font-size:1rem;color:var(--mut)}
   .chip{background:rgba(255,255,255,.09);border-radius:.35rem;padding:.05rem .5rem;color:var(--txt);font-weight:700;letter-spacing:.04em}
   .chip.doca{background:var(--c);color:#06101f}
+  .chip.cross{background:#7c4dff;color:#fff}
+  .ch .ib .cross{background:#7c4dff;color:#fff}
   .placa{font-family:Consolas,"Courier New",monospace;font-weight:700;color:var(--txt);letter-spacing:.08em;border:1px solid var(--linha);border-radius:.3rem;padding:0 .4rem}
   .card.ok .tp{color:var(--verde)} .card.atencao .tp{color:var(--ambar)}
   .card.critico{background:#3a1626;border-color:var(--verm)} .card.critico .tp{color:var(--verm);animation:pisca 1s steps(2) infinite}
@@ -178,7 +180,8 @@ const CFG = Object.assign({
   amanhaHora: 16,          // a partir dessa hora, a tela "Programação do dia seguinte" entra na rotação (0 desliga)
   amanhaSeg: 24,           // quanto tempo ela fica
   kpiSeg: 24,              // quanto tempo ele fica (divide entre Visão Geral / Recebimento / Expedição)
-  chamar: ['apresentou','aguardando_doca','em_andamento'],  // etapas que disparam som+tela cheia. Opções: 'apresentou','aguardando_doca','em_andamento'
+  chamarRec: ['apresentou','aguardando_doca','em_andamento'],  // Recebimento: etapas que disparam som+tela cheia
+  chamarExp: ['aguardando_doca','em_andamento'],               // Expedição: 'se apresentou' só aparece no painel, sem aviso/som
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
   maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
   falar: true,             // voz "Transportadora X, cliente Y, se apresentou"
@@ -306,11 +309,12 @@ function cartao(i, k){
     extra = i.obs ? `<span>${esc(i.obs.slice(0,34))}</span>` : '';
   }
   const doca = i.doca ? `<span class="chip doca">DOCA ${esc(i.doca)}</span>` : '';
+  const cross = /cross/i.test(i.operacao||'') ? `<span class="chip cross">CROSSDOCKING</span>` : '';
   const placa = i.placa ? `<span class="placa">${esc(i.placa)}</span>` : '';
   return `<div class="card ${i.doDiaAnterior?'ontem':''}" style="--c:${cor}" data-id="${i.id}-${k}">
       <div class="t"><span class="tr">${esc(transp)}</span>${topo}</div>
       <div class="cl">${esc(cli)}</div>
-      <div class="mt">${doca}${placa}${qt?`<span>${qt}</span>`:''}${extra}</div></div>`;
+      <div class="mt">${cross}${doca}${placa}${qt?`<span>${qt}</span>`:''}${extra}</div></div>`;
 }
 
 const CONHECIDOS = new Set();
@@ -366,7 +370,7 @@ function painel(modo, itens){
       ${tiles(bonito(i.transportadora)||'A DEFINIR',19,flip)}
       ${tiles(cli,28,'m '+flip)}
       ${tiles(i.placa,8,'p '+flip)}
-      ${tiles(i.doca?('0'+i.doca).slice(-2):'',2,'d '+flip)}
+      ${tiles(/cross/i.test(i.operacao||'')?'XD':(i.doca?('0'+i.doca).slice(-2):''),2,'d '+flip)}
       ${tiles(hhmm(i.chegada),5,'t '+flip)}
       ${tcell}</div>`;
   }).join('') ;
@@ -517,12 +521,19 @@ const primeiroNome2 = s => {
 function fraseChamada(i){
   const t = primeiroNome2(i.transportadora) || 'Transportadora', c = primeiroNome2(curto(i.cliente) || i.cliente);
   const d = parseInt(i.doca, 10), doca = isNaN(d) ? '' : `doca ${d}`;
+  const exp = i.funil === 'exp', cross = /cross/i.test(i.operacao || '');
+  const para = c ? `, para a ${c}` : '';
+  /* crossdocking (troca de nota): não fala a doca */
   if (i.etapa === 'em_andamento'){
-    const v = i.funil === 'exp' ? 'carregando' : 'descarregando';
+    if (cross) return `${t}, em crossdocking${para}.`;
+    const v = exp ? 'carregando' : 'descarregando';
     return [t, doca, c ? `${v} a ${c}` : v].filter(Boolean).join(', ') + '.';
   }
-  if (i.etapa === 'aguardando_doca') return `${t}, ${doca ? doca + ', ' : ''}aguardando doca${c ? ', para a ' + c : ''}.`;
-  return `${t} chegou${c ? ', para a ' + c : ''}.`;
+  if (i.etapa === 'aguardando_doca'){
+    if (cross) return `${t}, crossdocking, aguardando liberação${para}.`;
+    return exp ? `${t}, aguardando doca, para carregar${c ? ' a ' + c : ''}.` : `${t}, ${doca ? doca + ', ' : ''}aguardando doca${para}.`;
+  }
+  return cross ? `${t} chegou, crossdocking${para}.` : `${t} chegou${para}.`;
 }
 function chamar(item){ FILA.push(item); if(!EM_TELA) proxima(); }
 
@@ -583,7 +594,7 @@ function proxima(){
       <div class="e">${esc(TXT_CHAMADA[i.etapa](q))}</div>
       <div class="tr">${esc(transp)}</div>
       <div class="cl">${esc(curto(i.cliente)||bonito(i.cliente))}</div>
-      <div class="ib">${i.doca?`<span class="doca">DOCA ${esc(i.doca)}</span>`:''}${i.placa?`<span>${esc(i.placa)}</span>`:''}${qt?`<span>${esc(qt)}</span>`:''}</div>
+      <div class="ib">${/cross/i.test(i.operacao||'')?`<span class="cross">CROSSDOCKING</span>`:''}${i.doca&&!/cross/i.test(i.operacao||'')?`<span class="doca">DOCA ${esc(i.doca)}</span>`:''}${i.placa?`<span>${esc(i.placa)}</span>`:''}${qt?`<span>${esc(qt)}</span>`:''}</div>
       ${FILA.length?`<div class="fila">+ ${FILA.length} na fila de chamada</div>`:''}</div>`;
   box.classList.add('on');
   campainha();
@@ -598,7 +609,7 @@ function detectar(){
   const chave = i => `${i.id}:${i.etapa}`;
   const hoje = DADOS.hoje || '';
   const salvo = (()=>{ try{ const j = JSON.parse(lsGet('torre_vistos')||'null'); return j && j.dia===hoje ? new Set(j.k) : null; }catch(e){return null} })();
-  const eventos = DADOS.itens.filter(i=>CFG.chamar.includes(i.etapa));
+  const eventos = DADOS.itens.filter(i=>(i.funil==='exp'?CFG.chamarExp:CFG.chamarRec).includes(i.etapa));
   if (VISTOS === null){
     VISTOS = salvo || new Set(DADOS.itens.map(chave));      // 1ª vez no dia: não chama o que já estava lá
   } else {

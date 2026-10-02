@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Docas · Controle de Pátio Vix Log</title>
+<link rel="icon" href="icone-vixlog.svg">
+<style>
+  :root{--bg:#070d1f;--panel:#0f1a38;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--ok:#2ecc8f;--oc:#ff4d5e;--am:#ffb020;--roxo:#a98bff}
+  *{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+  body{display:flex;flex-direction:column}
+  header{display:flex;align-items:center;gap:1rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--linha)}
+  header img{height:38px} header h1{font-size:1.35rem;margin:0;line-height:1.1} header small{display:block;color:var(--mut);font-weight:500;font-size:.85rem}
+  .res{margin-left:auto;display:flex;gap:.7rem;flex-wrap:wrap;justify-content:flex-end}
+  .res span{background:var(--panel);border:1px solid var(--linha);border-radius:.6rem;padding:.4rem .8rem;font-weight:800;font-size:1rem}
+  .res b{font-size:1.4rem;margin-right:.3rem}
+  main{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr));gap:1rem;padding:1rem 1.2rem;align-content:stretch}
+  .doca{display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--linha);border-top:10px solid var(--c);border-radius:1rem;padding:1rem 1.1rem;min-height:15rem}
+  .doca.livre{--c:var(--ok)} .doca.ocup{--c:var(--oc)}
+  .n{display:flex;align-items:baseline;justify-content:space-between}
+  .n .num{font-size:1.1rem;letter-spacing:.14em;color:var(--mut);font-weight:800}
+  .n .num b{font-size:2.6rem;color:var(--txt);letter-spacing:0;margin-left:.3rem}
+  .st{font-size:1.5rem;font-weight:900;letter-spacing:.06em;color:var(--c);margin:.2rem 0 .6rem}
+  .tr{font-weight:900;font-size:1.35rem;text-transform:uppercase;overflow-wrap:anywhere;line-height:1.15}
+  .cl{color:#c5d2f5;font-size:1.05rem;margin-top:.2rem;overflow-wrap:anywhere}
+  .meta{margin-top:auto;padding-top:.7rem;display:flex;gap:.45rem;flex-wrap:wrap;color:var(--mut);font-size:.95rem}
+  .meta span{background:#16254d;border-radius:.4rem;padding:.2rem .55rem}
+  .meta .tipo{background:var(--c);color:#07101f;font-weight:800}
+  .meta .xd{background:#7c4dff;color:#fff;font-weight:800}
+  .livre .sub{color:var(--mut);font-size:1.05rem}
+  .fila{padding:.6rem 1.2rem;border-top:1px solid var(--linha);color:var(--mut);display:flex;gap:1.2rem;flex-wrap:wrap;font-size:1.05rem}
+  .fila b{color:var(--am)} #rel{margin-left:auto}
+  #erro{display:none;background:#401018;color:#ffb3bb;padding:.5rem 1.2rem}
+</style>
+</head>
+<body>
+<header><img src="icone-vixlog.svg" alt="Vix Log"><h1>Docas<small>Ocupação em tempo real · só visualização</small></h1><div class="res" id="res"></div></header>
+<div id="erro"></div>
+<main id="docas"></main>
+<div class="fila"><span id="fila"></span><span id="rel"></span></div>
+<script src="config.js"></script>
+<script>
+const CFG = Object.assign({api:'', docas:5}, window.TORRE_CONFIG||{});
+const Q = new URLSearchParams(location.search);
+const NDOCAS = Math.max(1, parseInt(Q.get('docas')||CFG.docas, 10) || 5);
+const DEMO = Q.has('demo');
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let TOKEN = Q.get('t') || ''; if (TOKEN) { lsSet('torre_t', TOKEN); history.replaceState(null,'',location.pathname+(DEMO?'?demo':'')); } else TOKEN = lsGet('torre_t') || '';
+const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const quando = s => { if(!s) return null; const t = Date.parse(String(s).replace(' ','T')); return isNaN(t)?null:new Date(t); };
+const dur = ms => { const m = Math.max(0, Math.round(ms/60000)); return m<60 ? m+' min' : Math.floor(m/60)+'h'+String(m%60).padStart(2,'0'); };
+const hhmm = s => { const d = quando(s); return d ? String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0') : ''; };
+const primeiro = s => String(s||'').split(/\s+/)[0] || '';
+const bonito = s => String(s||'').toLowerCase().replace(/(^|\s)\S/g, c=>c.toUpperCase());
+let ITENS = [];
+
+function demo(){
+  const min = m => { const d = new Date(Date.now()-m*60000), p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:00`; };
+  return [
+    {id:1,funil:'rec',etapa:'em_andamento',transportadora:'Jomed Transportes',cliente:'Semina Industria e Comercio Ltda',doca:'01',inicio:min(35),operacao:'Descarga',conferente:'Mateus Santos'},
+    {id:2,funil:'exp',etapa:'em_andamento',transportadora:'Volix',cliente:'Fitlog',doca:'03',inicio:min(12),operacao:'',conferente:''},
+    {id:3,funil:'rec',etapa:'em_andamento',transportadora:'Transgarra Operações Logísticas',cliente:'GRF Distribuicao',doca:'04',inicio:min(70),operacao:'Descarga',conferente:'Greziele Nascimento'},
+    {id:4,funil:'rec',etapa:'aguardando_doca',transportadora:'Naga',cliente:'Delly',chegada:min(18)},
+    {id:5,funil:'rec',etapa:'apresentou',transportadora:'Rapido',cliente:'Lebon',chegada:min(4)},
+    {id:6,funil:'rec',etapa:'em_andamento',transportadora:'Cross Log',cliente:'Hello Brasil',doca:'',inicio:min(20),operacao:'Crossdocking'},
+  ];
+}
+async function carregar(){
+  const er = document.getElementById('erro');
+  try{
+    if (DEMO) ITENS = demo();
+    else {
+      const r = await fetch(`${CFG.api.replace(/\/$/,'')}/?t=${encodeURIComponent(TOKEN)}`, {cache:'no-store'});
+      if (r.status===401) throw new Error('Senha inválida — abra o link com ?t=SUA_SENHA');
+      if (!r.ok) throw new Error('Erro ' + r.status);
+      ITENS = (await r.json()).itens || [];
+    }
+    er.style.display='none'; desenhar();
+  }catch(e){ er.textContent='⚠ '+(e.message||e)+' — tentando de novo…'; er.style.display='block'; }
+}
+const num = v => { const n = parseInt(String(v||'').replace(/\D/g,''), 10); return isNaN(n)?0:n; };
+function desenhar(){
+  const emOp = ITENS.filter(i=>i.etapa==='em_andamento');
+  const porDoca = {}; emOp.forEach(i=>{ const n = num(i.doca); if (n) (porDoca[n] = porDoca[n]||[]).push(i); });
+  const semDoca = emOp.filter(i=>!num(i.doca));
+  let ocup = 0, html = '';
+  for (let n=1; n<=NDOCAS; n++){
+    const lista = porDoca[n];
+    if (!lista){ html += `<section class="doca livre"><div class="n"><span class="num">DOCA<b>${String(n).padStart(2,'0')}</b></span></div><div class="st">LIVRE</div><div class="sub">Disponível para o próximo veículo</div></section>`; continue; }
+    ocup++;
+    const i = lista[0], t0 = quando(i.inicio) || quando(i.movido) || quando(i.chegada);
+    const cross = /cross/i.test(i.operacao||'');
+    html += `<section class="doca ocup"><div class="n"><span class="num">DOCA<b>${String(n).padStart(2,'0')}</b></span></div>
+      <div class="st">OCUPADA</div>
+      <div class="tr">${esc(bonito(i.transportadora)||'Transportadora')}</div>
+      <div class="cl">${esc(bonito(i.cliente))}</div>
+      <div class="meta"><span class="tipo">${i.funil==='exp'?'EXPEDIÇÃO':'RECEBIMENTO'}</span>${cross?'<span class="xd">CROSSDOCKING</span>':''}${t0?`<span>desde ${hhmm(i.inicio||i.movido||i.chegada)} · ${dur(Date.now()-t0.getTime())}</span>`:''}${i.conferente?`<span>${esc(primeiro(i.conferente))}</span>`:''}${lista.length>1?`<span>+${lista.length-1} na mesma doca</span>`:''}</div></section>`;
+  }
+  document.getElementById('docas').innerHTML = html;
+  const aguard = ITENS.filter(i=>i.etapa==='aguardando_doca' && !i.doDiaAnterior).length;
+  const apres = ITENS.filter(i=>i.etapa==='apresentou' && !i.doDiaAnterior).length;
+  const cross = semDoca.filter(i=>/cross/i.test(i.operacao||'')).length;
+  document.getElementById('res').innerHTML = `<span style="color:var(--ok)"><b>${NDOCAS-ocup}</b>livres</span><span style="color:var(--oc)"><b>${ocup}</b>ocupadas</span>`;
+  const partes = [`<b>${apres}</b> se apresentaram`, `<b>${aguard}</b> aguardando doca`];
+  if (cross) partes.push(`<b>${cross}</b> em crossdocking (sem doca)`);
+  const outros = semDoca.length - cross; if (outros>0) partes.push(`<b>${outros}</b> em operação sem doca informada`);
+  document.getElementById('fila').innerHTML = partes.join(' · ');
+  document.getElementById('rel').textContent = 'atualizado ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+carregar(); setInterval(carregar, 20000); setInterval(()=>{ if (ITENS.length) desenhar(); }, 30000);
+</script>
+</body>
+</html>
