@@ -540,7 +540,8 @@ async function ouvirManual(){
     if (!r.ok) return; const c = await r.json();
     if (!c.seq || c.seq === SEQ_MANUAL) return;
     SEQ_MANUAL = c.seq; lsSet('torre_seq', String(c.seq));
-    if (Date.now() - c.seq > 90*1000) return;        // chamada velha (TV reiniciada): ignora
+    const srv = Date.parse(r.headers.get('date')||'') || Date.now();   // hora do servidor (não depende do relógio da TV)
+    if (srv - c.seq > 90*1000) return;                 // chamada velha (TV reiniciada): ignora
     const i = Object.assign({}, c.item);
     i.etapa = TXT_CHAMADA[i.etapa] ? i.etapa : 'apresentou';
     if (!ETAPA[i.etapa]) return; chamar(i);
