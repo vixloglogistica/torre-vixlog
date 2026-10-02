@@ -71,3 +71,13 @@ Os campos personalizados chegam do BI só com código. Eu deduzi o significado p
 
 ## No-show (automático)
 No Recebimento, quem continua **Agendado** depois das 12h (`noShowHora` no config.js; 0 desliga) aparece como **NO-SHOW**, sem precisar mover o card no Bitrix24. Se o carro chegar depois, o card volta para o fluxo normal. Cards nas etapas "Não cumprido"/"Não realizado" do Bitrix24 também entram nesse grupo (com chegada registrada, aparecem como NÃO CUMPRIDO no painel).
+
+## Chamada manual ("chamar de novo")
+A equipe abre `chamar.html` (ex.: `https://vixloglogistica.github.io/torre-vixlog/chamar.html?t=TOKEN`), aperta **CHAMAR** no veículo e a TV do pátio toca o aviso de novo (som + tela grande + voz).
+
+Para funcionar, o Worker precisa de um **KV** (armazenamento gratuito do Cloudflare):
+1. Cloudflare → *Storage & databases* → *KV* → **Create** → nome `torre-chamadas`.
+2. Worker `torre-vixlog` → *Settings* → *Bindings* → **Add** → *KV namespace* → variável **`CHAMADAS`** → escolher `torre-chamadas` → salvar.
+3. Colar o `proxy/worker.js` novo no Worker (Edit code) e **Deploy**.
+
+A TV consulta a cada 4 s; o aviso aparece em até ~5 s (às vezes o KV demora mais, até ~1 min, no pior caso). Chamadas com mais de 90 s são ignoradas (ex.: TV reiniciada).

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chamar veículo · Controle de Pátio Vix Log</title>
+<link rel="icon" href="icone-vixlog.svg">
+<style>
+  :root{--bg:#070d1f;--panel:#0f1a38;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--az:#0A6BFA;--ok:#2ecc8f;--am:#ffb020}
+  *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+  header{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border-bottom:1px solid var(--linha);position:sticky;top:0;background:var(--bg);z-index:2}
+  header img{height:34px} header h1{font-size:1.1rem;margin:0;line-height:1.1} header small{color:var(--mut);display:block;font-weight:500;font-size:.8rem}
+  main{max-width:760px;margin:0 auto;padding:1rem}
+  .barra{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
+  .barra input[type=search]{flex:1;min-width:10rem;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--linha);background:var(--panel);color:var(--txt);font-size:1rem}
+  .barra label{display:flex;align-items:center;gap:.4rem;color:var(--mut);font-size:.95rem}
+  h2{font-size:.85rem;letter-spacing:.14em;color:var(--mut);margin:1.2rem 0 .5rem}
+  .card{display:flex;align-items:center;gap:.8rem;background:var(--panel);border:1px solid var(--linha);border-left:5px solid var(--c,#5b8cff);border-radius:.7rem;padding:.8rem .9rem;margin-bottom:.6rem}
+  .info{flex:1;min-width:0} .tr{font-weight:800;font-size:1.05rem;text-transform:uppercase;overflow-wrap:anywhere}
+  .cl{color:#c5d2f5;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .mt{color:var(--mut);font-size:.82rem;margin-top:.2rem}
+  .st{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--c)}
+  button{border:0;border-radius:.7rem;background:var(--az);color:#fff;font-weight:800;font-size:1rem;padding:.9rem 1.1rem;min-width:7.2rem;cursor:pointer}
+  button:active{transform:scale(.97)} button[disabled]{background:#24386e;color:#9db0e0;cursor:default}
+  button.ok{background:var(--ok);color:#042417}
+  .vazio{color:var(--mut);text-align:center;padding:2rem 0}
+  #msg{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--linha);padding:.7rem 1rem;border-radius:.7rem;display:none;max-width:92vw}
+  #msg.erro{border-color:#ff4d5e;color:#ffb3bb}
+  #quem{display:none}
+</style>
+</head>
+<body>
+<header><img src="icone-vixlog.svg" alt="Vix Log"><h1>Chamar veículo<small>Toca de novo na TV do pátio</small></h1></header>
+<main>
+  <div class="barra">
+    <input id="busca" type="search" placeholder="Buscar transportadora, cliente ou placa">
+    <label><input id="agend" type="checkbox"> mostrar agendados</label>
+  </div>
+  <div id="lista"><div class="vazio">carregando…</div></div>
+</main>
+<div id="msg"></div>
+<script src="config.js"></script>
+<script>
+const CFG = Object.assign({api:''}, window.TORRE_CONFIG||{});
+const Q = new URLSearchParams(location.search);
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let TOKEN = Q.get('t') || ''; if (TOKEN) { lsSet('torre_t', TOKEN); history.replaceState(null,'',location.pathname); } else TOKEN = lsGet('torre_t') || '';
+const base = CFG.api.replace(/\/$/,'');
+const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ETAPAS = {apresentou:['VEÍCULO SE APRESENTOU','#ffb020'], aguardando_doca:['AGUARDANDO DOCA','#ff7a3d'], em_andamento:['EM OPERAÇÃO','#a98bff'], agendado:['AGENDADO','#5b8cff']};
+const ORDEM = ['apresentou','aguardando_doca','em_andamento','agendado'];
+let ITENS = [], LIDOS = {};
+function msg(t, erro){ const m=document.getElementById('msg'); m.textContent=t; m.className=erro?'erro':''; m.style.display='block'; clearTimeout(msg.t); msg.t=setTimeout(()=>m.style.display='none', 3500); }
+async function carregar(){
+  try{
+    const r = await fetch(`${base}/?t=${encodeURIComponent(TOKEN)}`, {cache:'no-store'});
+    if (r.status===401) throw new Error('Token inválido — abra o link com ?t=SEU_TOKEN');
+    if (!r.ok) throw new Error('Erro ' + r.status);
+    ITENS = (await r.json()).itens || []; desenhar();
+  }catch(e){ msg('⚠ '+(e.message||e), true); }
+}
+function desenhar(){
+  const q = document.getElementById('busca').value.trim().toLowerCase(), ag = document.getElementById('agend').checked;
+  const ok = i => ORDEM.includes(i.etapa) && (ag || i.etapa!=='agendado') && !i.doDiaAnterior &&
+      (!q || [i.transportadora,i.cliente,i.placa].join(' ').toLowerCase().includes(q));
+  const lista = ITENS.filter(ok).sort((a,b)=>ORDEM.indexOf(a.etapa)-ORDEM.indexOf(b.etapa) || (a.chegada||'').localeCompare(b.chegada||''));
+  let html = '', grupo = '';
+  for (const i of lista){
+    const g = i.funil==='exp' ? 'EXPEDIÇÃO' : 'RECEBIMENTO';
+    if (g!==grupo){ html += `<h2>${g}</h2>`; grupo = g; }
+    const [nome,cor] = ETAPAS[i.etapa], ja = LIDOS[i.id];
+    html += `<div class="card" style="--c:${cor}"><div class="info"><span class="st">${nome}</span>
+      <div class="tr">${esc(i.transportadora||'Transportadora a definir')}</div><div class="cl">${esc(i.cliente||'')}</div>
+      <div class="mt">${i.doca?'Doca '+esc(i.doca)+' · ':''}${i.placa?esc(i.placa)+' · ':''}${i.chegada?'chegou '+esc(i.chegada.slice(11,16)):''}</div></div>
+      <button data-id="${esc(i.id)}" class="${ja?'ok':''}">${ja?'✓ Chamado '+ja:'📢 CHAMAR'}</button></div>`;
+  }
+  document.getElementById('lista').innerHTML = html || '<div class="vazio">Nenhum veículo para chamar agora.</div>';
+}
+async function chamar(btn){
+  const i = ITENS.find(x=>String(x.id)===btn.dataset.id); if(!i) return;
+  btn.disabled = true; btn.textContent = 'chamando…';
+  try{
+    const r = await fetch(`${base}/chamar?t=${encodeURIComponent(TOKEN)}`, {method:'POST', body: JSON.stringify({item:i, por:lsGet('torre_quem')||''})});
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok || !d.ok) throw new Error(d.erro || (r.ok ? 'o Worker ainda não tem a chamada manual (atualize o código e o KV)' : 'erro '+r.status));
+    const h = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+    LIDOS[i.id] = h; msg('Chamada enviada para a TV ✓');
+  }catch(e){ msg('⚠ '+(e.message||e), true); }
+  desenhar(); setTimeout(()=>{ const b=document.querySelector(`button[data-id="${CSS.escape(String(i.id))}"]`); if(b){ b.disabled=false; b.textContent='📢 CHAMAR DE NOVO'; b.className=''; } }, 6000);
+}
+document.getElementById('lista').addEventListener('click', e=>{ const b=e.target.closest('button[data-id]'); if(b && !b.disabled) chamar(b); });
+document.getElementById('busca').addEventListener('input', desenhar);
+document.getElementById('agend').addEventListener('change', desenhar);
+carregar(); setInterval(carregar, 20000);
+</script>
+</body></html>

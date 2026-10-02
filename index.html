@@ -464,6 +464,22 @@ const TXT_CHAMADA = {
   em_andamento:    (q)=>`DIRIJA-SE À DOCA · ${q.verbo.toUpperCase()}`,
 };
 function chamar(item){ FILA.push(item); if(!EM_TELA) proxima(); }
+
+/* ---- chamada manual: a equipe aperta CHAMAR na página chamar.html e a TV toca de novo ---- */
+let SEQ_MANUAL = +(lsGet('torre_seq')||0);
+async function ouvirManual(){
+  if (DEMO || !CFG.api) return;
+  try{
+    const r = await fetch(`${CFG.api.replace(/\/$/,'')}/chamada?t=${encodeURIComponent(TOKEN)}`, {cache:'no-store'});
+    if (!r.ok) return; const c = await r.json();
+    if (!c.seq || c.seq === SEQ_MANUAL) return;
+    SEQ_MANUAL = c.seq; lsSet('torre_seq', String(c.seq));
+    if (Date.now() - c.seq > 90*1000) return;        // chamada velha (TV reiniciada): ignora
+    const i = Object.assign({}, c.item);
+    i.etapa = TXT_CHAMADA[i.etapa] ? i.etapa : 'apresentou';
+    if (!ETAPA[i.etapa]) return; chamar(i);
+  }catch(e){}
+}
 function proxima(){
   const i = FILA.shift(); const box = $('#chamada');
   if (!i){ EM_TELA=false; box.classList.remove('on'); return; }
@@ -594,6 +610,7 @@ document.addEventListener('click', ()=>{ if(!SOM_OK) ativarSom(); }, {once:false
 function iniciar(){
   montar(MODO()); relogio(); setInterval(relogio, 1000);
   ciclo(); setInterval(ciclo, CFG.intervalo*1000);
+  ouvirManual(); setInterval(ouvirManual, 4000);
   requestAnimationFrame(rolar); setInterval(atualizaBotaoSom, 2000);
 }
 // tenta liberar o som sozinho (funciona se o Chrome foi aberto com --autoplay-policy=no-user-gesture-required)

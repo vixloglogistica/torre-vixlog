@@ -145,13 +145,31 @@ export default {
   async fetch(req, env, ctx) {
     const cors = {
       'Access-Control-Allow-Origin': env.ALLOW_ORIGIN || '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
       'Cache-Control': 'no-store',
     };
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
     const url = new URL(req.url);
     if (!env.PAINEL_TOKEN || url.searchParams.get('t') !== env.PAINEL_TOKEN)
       return new Response('{"erro":"acesso negado"}', { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } });
+
+    // ---- chamada manual (precisa do KV "CHAMADAS" ligado ao Worker) ----
+    const json = (o, st = 200) => new Response(JSON.stringify(o), { status: st, headers: { ...cors, 'Content-Type': 'application/json' } });
+    if (url.pathname.endsWith('/chamar') && req.method === 'POST') {
+      if (!env.CHAMADAS) return json({ erro: 'KV CHAMADAS não configurado no Worker' }, 501);
+      let b; try { b = JSON.parse(await req.text()); } catch (e) { return json({ erro: 'corpo inválido' }, 400); }
+      const it = b && b.item ? b.item : {}, c = k => String(it[k] ?? '').slice(0, 120);
+      const chamada = { seq: Date.now(), por: String(b.por || '').slice(0, 40),
+        item: { id: c('id'), funil: c('funil') === 'exp' ? 'exp' : 'rec', etapa: c('etapa'), transportadora: c('transportadora'), cliente: c('cliente'),
+                placa: c('placa'), doca: c('doca'), tipo: c('tipo'), qtd: c('qtd') } };
+      await env.CHAMADAS.put('ultima', JSON.stringify(chamada), { expirationTtl: 3600 });
+      return json({ ok: true, seq: chamada.seq });
+    }
+    if (url.pathname.endsWith('/chamada')) {
+      if (!env.CHAMADAS) return json({ seq: 0, semKV: true });
+      return new Response((await env.CHAMADAS.get('ultima')) || '{"seq":0}', { headers: { ...cors, 'Content-Type': 'application/json' } });
+    }
 
     // cache de 20 s: várias TVs/abas não multiplicam as chamadas ao Bitrix24
     const cache = caches.default;
