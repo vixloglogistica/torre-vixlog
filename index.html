@@ -531,7 +531,7 @@ function fraseChamada(i){
   }
   if (i.etapa === 'aguardando_doca'){
     if (cross) return `${t}, crossdocking, aguardando liberação${para}.`;
-    return exp ? `${t}, aguardando doca, para carregar${c ? ' a ' + c : ''}.` : `${t}, ${doca ? doca + ', ' : ''}aguardando doca${para}.`;
+    return exp ? `${t}, aguardando doca, para carregar${c ? ' a ' + c : ''}.` : `${t}, aguardando doca${para}.`;
   }
   return cross ? `${t} chegou, crossdocking${para}.` : `${t} chegou${para}.`;
 }
