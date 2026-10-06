@@ -45,7 +45,7 @@ const Q = new URLSearchParams(location.search);
 const NDOCAS = Math.max(1, parseInt(Q.get('docas')||CFG.docas, 10) || 5);
 const DEMO = Q.has('demo');
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-let TOKEN = Q.get('t') || ''; if (TOKEN) { lsSet('torre_t', TOKEN); history.replaceState(null,'',location.pathname+(DEMO?'?demo':'')); } else TOKEN = lsGet('torre_t') || '';
+let TOKEN = Q.get('t') || ''; if (TOKEN) { lsSet('torre_t', TOKEN); } else TOKEN = lsGet('torre_t') || '';
 const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const quando = s => { if(!s) return null; const t = Date.parse(String(s).replace(' ','T')); return isNaN(t)?null:new Date(t); };
 const dur = ms => { const m = Math.max(0, Math.round(ms/60000)); return m<60 ? m+' min' : Math.floor(m/60)+'h'+String(m%60).padStart(2,'0'); };

@@ -43,7 +43,7 @@
 const CFG = Object.assign({api:''}, window.TORRE_CONFIG||{});
 const Q = new URLSearchParams(location.search);
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
-let TOKEN = Q.get('t') || ''; if (TOKEN) { lsSet('torre_t', TOKEN); history.replaceState(null,'',location.pathname); } else TOKEN = lsGet('torre_t') || '';
+let TOKEN = Q.get('t') || ''; if (TOKEN) { lsSet('torre_t', TOKEN); } else TOKEN = lsGet('torre_t') || '';
 const base = CFG.api.replace(/\/$/,'');
 const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ETAPAS = {apresentou:['VEÍCULO SE APRESENTOU','#ffb020'], aguardando_doca:['AGUARDANDO DOCA','#ff7a3d'], em_andamento:['EM OPERAÇÃO','#a98bff'], agendado:['AGENDADO','#5b8cff']};

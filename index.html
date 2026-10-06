@@ -194,7 +194,6 @@ if (Q.get('virada')) CFG.viradaHora = +Q.get('virada');
 if (Q.get('kpicada')) CFG.kpiCadaSeg = +Q.get('kpicada');   // teste: segundos entre as entradas do KPI
 let TOKEN = Q.get('t') || ''; const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 if (TOKEN) lsSet('torre_t', TOKEN); else TOKEN = lsGet('torre_t') || '';
-if (Q.get('t') || Q.get('api')) history.replaceState(null,'',location.pathname + (DEMO?'?demo':'')); // tira o token da barra de endereço
 
 /* ---------- etapas e quadros ---------- */
 const ETAPA = {
