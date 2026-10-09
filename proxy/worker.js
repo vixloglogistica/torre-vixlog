@@ -149,8 +149,10 @@ export function transformar(dealTab, ufTab, agora = new Date()) {
   // próximo dia com agendamento (sexta mostra segunda; sábado entra se houver)
   const proxData = prox.map((p) => p.dataAg).sort()[0];
   const amanha = proxData ? { data: proxData, itens: prox.filter((p) => p.dataAg === proxData).map(({ id, cliente, tipo, qtd }) => ({ id, cliente, tipo, qtd })) } : null;
-  // próximos 3 dias com agendamento (tela "Próximos agendamentos")
-  const datasProx = [...new Set(prox.map((p) => p.dataAg))].sort().slice(0, 3);
+  // próximos 14 dias com agendamento (tela "Próximos agendamentos"; a tela escolhe quantos dias mostrar)
+  const limite = new Date(hoje + 'T12:00:00Z'); limite.setUTCDate(limite.getUTCDate() + 14);
+  const ate = limite.toISOString().slice(0, 10);
+  const datasProx = [...new Set(prox.map((p) => p.dataAg))].filter((d) => d <= ate).sort();
   const proximos = datasProx.map((data) => ({ data, itens: prox.filter((p) => p.dataAg === data).map(({ id, cliente, tipo, qtd }) => ({ id, cliente, tipo, qtd })) }));
   return { geradoEm: agora.toISOString(), hoje, itens, futuros, amanha, proximos };
 }

@@ -97,8 +97,8 @@ A voz escolhida é a mais natural do navegador (Edge: vozes "Natural"; Chrome: "
 ## Programação do dia seguinte
 Tela `amanha.html` (estilo aeroporto): cliente, nº de agendamentos, paletes e volumes do próximo dia com agendamento (sexta mostra segunda; sábado se houver). Entra na rotação com o KPI a partir de `amanhaHora` (16h, `config.js`), dura `amanhaSeg` s. Tecla **P** abre/fecha manualmente. Prévia: `amanha.html?demo`. O Worker envia o campo `amanha` — é preciso reimplantar `proxy/worker.js`.
 
-## Próximos agendamentos (3 dias)
-Tela `proximos.html?t=SENHA`: um quadro por dia, para os próximos 3 dias com agendamento (ex.: seg 12, ter 13, qua 14), com agendamentos, paletes e volumes por cliente. Prévia: `proximos.html?demo`. O Worker envia o campo `proximos` — é preciso reimplantar `proxy/worker.js`.
+## Próximos agendamentos (lista da semana)
+Tela `proximos.html?t=SENHA`: lista simples (não é painel de aeroporto) com um quadro por dia para os próximos 7 dias corridos, com agendamentos, paletes e volumes por cliente. Dia útil sem agendamento aparece como "Sem agendamentos" (ex.: feriado); sábado e domingo só aparecem se houver. `?dias=3` muda a janela (máx. 14). Prévia: `proximos.html?demo`. O Worker envia o campo `proximos` (próximos 14 dias com agendamento) — é preciso reimplantar `proxy/worker.js`.
 
 ## Docas (sala da equipe) e Tipo da Operação
 - `docas.html?t=SENHA`: tela só de visualização com as 5 docas (livre/ocupada, transportadora, cliente, recebimento/expedição, tempo). Ocupada = card "em operação" com doca informada. `?docas=N` muda a quantidade.
