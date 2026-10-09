@@ -149,7 +149,10 @@ export function transformar(dealTab, ufTab, agora = new Date()) {
   // próximo dia com agendamento (sexta mostra segunda; sábado entra se houver)
   const proxData = prox.map((p) => p.dataAg).sort()[0];
   const amanha = proxData ? { data: proxData, itens: prox.filter((p) => p.dataAg === proxData).map(({ id, cliente, tipo, qtd }) => ({ id, cliente, tipo, qtd })) } : null;
-  return { geradoEm: agora.toISOString(), hoje, itens, futuros, amanha };
+  // próximos 3 dias com agendamento (tela "Próximos agendamentos")
+  const datasProx = [...new Set(prox.map((p) => p.dataAg))].sort().slice(0, 3);
+  const proximos = datasProx.map((data) => ({ data, itens: prox.filter((p) => p.dataAg === data).map(({ id, cliente, tipo, qtd }) => ({ id, cliente, tipo, qtd })) }));
+  return { geradoEm: agora.toISOString(), hoje, itens, futuros, amanha, proximos };
 }
 
 // ---------- chamada ao Bitrix24 ----------

@@ -97,6 +97,9 @@ A voz escolhida é a mais natural do navegador (Edge: vozes "Natural"; Chrome: "
 ## Programação do dia seguinte
 Tela `amanha.html` (estilo aeroporto): cliente, nº de agendamentos, paletes e volumes do próximo dia com agendamento (sexta mostra segunda; sábado se houver). Entra na rotação com o KPI a partir de `amanhaHora` (16h, `config.js`), dura `amanhaSeg` s. Tecla **P** abre/fecha manualmente. Prévia: `amanha.html?demo`. O Worker envia o campo `amanha` — é preciso reimplantar `proxy/worker.js`.
 
+## Próximos agendamentos (3 dias)
+Tela `proximos.html?t=SENHA`: um quadro por dia, para os próximos 3 dias com agendamento (ex.: seg 12, ter 13, qua 14), com agendamentos, paletes e volumes por cliente. Prévia: `proximos.html?demo`. O Worker envia o campo `proximos` — é preciso reimplantar `proxy/worker.js`.
+
 ## Docas (sala da equipe) e Tipo da Operação
 - `docas.html?t=SENHA`: tela só de visualização com as 5 docas (livre/ocupada, transportadora, cliente, recebimento/expedição, tempo). Ocupada = card "em operação" com doca informada. `?docas=N` muda a quantidade.
 - Campo "Tipo da Operação" (Descarga | Crossdocking) do Bitrix24: o Worker acha a coluna pelo valor e envia `operacao`. Crossdocking não fala nem mostra doca (chip CROSSDOCKING, "XD" no painel aeroporto).

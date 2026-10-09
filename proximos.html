@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Próximos agendamentos · Controle de Pátio Vix Log</title>
+<link rel="icon" href="icone-vixlog.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Pátio Vix Log">
+<style>
+  :root{--bg:#070d1f;--panel:#0f1a38;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--az:#5b8cff;--ok:#2ecc8f;--am:#ffb020;--vm:#ff4d5e;--rox:#a98bff}
+  *{box-sizing:border-box;margin:0}
+  html{font-size:16px} @media (min-width:1200px){html{font-size:calc(100vw / 120)}} @media (max-width:700px){html{font-size:10px}}
+  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1rem}
+  @media (min-width:1200px){body{height:100vh;overflow:hidden}}
+  header{display:flex;align-items:center;gap:1.2rem;height:5rem;flex:none}
+  header img{height:3.6rem} .sep{width:1px;align-self:stretch;margin:.8rem 0;background:var(--linha)}
+  .tit small{display:block;font-size:.95rem;letter-spacing:.2em;color:var(--mut);font-weight:600}
+  .tit strong{font-size:2.1rem;letter-spacing:.04em;font-weight:800}
+  .dt{margin-left:auto;text-align:right;font-size:1.1rem;color:var(--mut)}
+  main{flex:1;min-height:0;margin-top:.8rem;display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:.8rem}
+  @media (max-width:1199px){main{grid-template-columns:1fr}}
+  @media (max-width:700px){.dt{display:none} header{height:auto;padding-bottom:.4rem} header img{height:2.6rem} .tit strong{font-size:1.5rem}}
+  .box{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  @media (max-width:1199px){.box{min-height:24rem}}
+  .dia{padding:.7rem 1.2rem;border-bottom:2px solid var(--linha);display:flex;align-items:baseline;gap:.8rem;flex:none}
+  .dia b{font-size:1.9rem;letter-spacing:.05em;font-weight:800;color:var(--am);text-transform:uppercase}
+  .dia span{font-size:1.15rem;color:var(--mut)}
+  .res{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;padding:.6rem 1rem;flex:none;border-bottom:1px solid var(--linha)}
+  .res div{border-left:.3rem solid var(--c);padding-left:.6rem}
+  .res .r{font-size:.78rem;letter-spacing:.12em;color:var(--mut);font-weight:700}
+  .res .v{font-size:2rem;font-weight:800;line-height:1.1}
+  .cab,.lin{display:grid;grid-template-columns:1fr 2.6rem 5rem 6rem;column-gap:.6rem;align-items:center;padding:0 1rem}
+  .cab{height:2.4rem;border-bottom:1px solid var(--linha);font-size:.78rem;letter-spacing:.12em;color:var(--mut);font-weight:700;flex:none}
+  .cab span:nth-child(n+2){text-align:center}
+  .corpo{flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column}
+  .lin{height:3.7rem;flex:none;border-bottom:1px solid rgba(39,57,107,.55)}
+  .lin:nth-child(even){background:rgba(255,255,255,.025)}
+  .lin>.fl{justify-self:center} .lin>.fl:first-child{justify-self:start}
+  .fl{display:inline-flex;gap:.1rem}
+  .fl i{font-style:normal;display:grid;place-items:center;width:.95rem;height:2.4rem;background:linear-gradient(#22346a 0 49%,#14224a 51% 100%);border-radius:.22rem;
+        font-weight:700;font-size:1.55rem;color:#f4f7ff;position:relative;font-family:Consolas,"Segoe UI",monospace}
+  .fl i::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.4)}
+  .fl.p i{color:var(--ok)} .fl.v i{color:var(--am)} .fl.z i{color:#fff} .fl.mut i{color:#4a5a8a}
+  .fl.flip i{animation:flap .55s ease-out both;animation-delay:calc(var(--k) * 22ms)}
+  @keyframes flap{0%{transform:rotateX(-90deg);opacity:.2}60%{transform:rotateX(12deg);opacity:1}100%{transform:none}}
+  .vazio{margin:auto;color:var(--mut);font-size:1.15rem;letter-spacing:.12em;text-align:center;padding:2rem}
+  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--vm);color:#ffb3bb;padding:.7rem 1rem;border-radius:.7rem;display:none;z-index:5}
+</style>
+</head>
+<body>
+<header>
+  <img src="logo-vixlog.svg" alt="Vix Log"><div class="sep"></div>
+  <div class="tit"><small>CONTROLE DE PÁTIO</small><strong>PRÓXIMOS AGENDAMENTOS</strong></div>
+  <div class="dt" id="sub">próximos 3 dias com agendamento</div>
+</header>
+<main id="cols"></main>
+<div id="erro"></div>
+<script src="config.js"></script>
+<script>
+/* Próximos agendamentos: lê "proximos" do Worker (até 3 próximos dias com agendamento, um quadro por dia) */
+const CFG = Object.assign({api:'', intervalo:60}, window.TORRE_CONFIG||{});
+const Q = new URLSearchParams(location.search), DEMO = Q.has('demo');
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let TOKEN = Q.get('t') || ''; if (TOKEN) lsSet('torre_t', TOKEN); else TOKEN = lsGet('torre_t') || '';
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DIAS = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const bonito = s => String(s||'').replace(/\s+/g,' ').trim();
+const curto = s => bonito(s).replace(/\b(LTDA|EIRELI|S\.?\/?A\.?|ME|EPP)\b\.?/gi,'').replace(/\s+/g,' ').trim();
+const nf = n => n.toLocaleString('pt-BR');
+const NOME = 18;   // letras do nome do cliente por linha
+
+function demo(){
+  const C = ['SEMINA INDUSTRIA E COMERCIO LTDA','DELLY DISTRIBUIDORA DE COSMETICOS LTDA','COMERCIAL HELLO BRASIL LTDA','YOFC BRASIL CABOS LTDA','LEBON PRODUTOS QUIMICOS LTDA','AEA DISTRIBUIDORA LTDA','GRF DISTRIBUICAO LTDA'];
+  const mk = (data,n,o)=>({data,itens:Array.from({length:n},(_,i)=>{const p=(i+o)%3!==1;return {id:i,cliente:C[(i*3+o)%7],tipo:p?'Paletes':'Volumes',qtd:String(p?4+((i+o)*7)%26:20+((i+o)*37)%400)}})});
+  return [mk('2026-10-12',14,0),mk('2026-10-13',6,2),mk('2026-10-14',3,5)];
+}
+async function carregar(){
+  try{
+    let p; if (DEMO) p = demo(); else {
+      const r = await fetch(`${CFG.api.replace(/\/$/,'')}/?t=${encodeURIComponent(TOKEN)}`,{cache:'no-store'});
+      if (r.status===401) throw new Error('Token inválido — abra com ?t=SEU_TOKEN'); if (!r.ok) throw new Error('Erro '+r.status);
+      p = (await r.json()).proximos; if (!p) throw new Error('O Worker ainda não envia os próximos agendamentos (atualize o código e dê Deploy).');
+    }
+    desenhar(p); $('#erro').style.display='none';
+  }catch(e){ $('#erro').textContent='⚠ '+(e.message||e); $('#erro').style.display='block'; }
+}
+const $ = s => document.querySelector(s);
+const tiles = (txt, n, cls='') => { const t = String(txt||'').toUpperCase().slice(0,n).padEnd(n,' ');
+  return `<span class="fl ${cls}">` + [...t].map((c,k)=>`<i style="--k:${k}">${c===' '?'&nbsp;':esc(c)}</i>`).join('') + '</span>'; };
+const num = (v,n,cls,flip) => tiles(String(v).padStart(n,' '), n, cls+' '+flip);
+let SIG = '';
+function dia(d){
+  const dt = new Date(d.data+'T12:00:00Z'), its = d.itens||[], cli = {};
+  its.forEach(i=>{ const n = curto(i.cliente)||bonito(i.cliente)||'—'; const c = (cli[n] ||= {n:0,p:0,v:0}); c.n++; if(i.tipo==='Paletes') c.p += +i.qtd||0; else if(i.tipo==='Volumes') c.v += +i.qtd||0; });
+  const pal = Object.values(cli).reduce((s,c)=>s+c.p,0), vol = Object.values(cli).reduce((s,c)=>s+c.v,0);
+  const lin = Object.entries(cli).sort((x,y)=>y[1].n-x[1].n || (y[1].p+y[1].v)-(x[1].p+x[1].v));
+  return {dt,its,lin,pal,vol};
+}
+function desenhar(P){
+  const sig = JSON.stringify(P), flip = SIG !== sig ? 'flip' : ''; SIG = sig;
+  $('#cols').style.setProperty('--n', Math.max(1,P.length));
+  if (!P.length){ $('#cols').innerHTML = '<div class="box"><div class="vazio">— NENHUM AGENDAMENTO PROGRAMADO —</div></div>'; return; }
+  $('#cols').innerHTML = P.map(d=>{ const x = dia(d), t = x.dt;
+    return `<section class="box">
+      <div class="dia"><b>${DIAS[t.getUTCDay()]}</b><span>${String(t.getUTCDate()).padStart(2,'0')} de ${MESES[t.getUTCMonth()]}</span></div>
+      <div class="res"><div style="--c:var(--az)"><div class="r">AGEND.</div><div class="v">${x.its.length}</div></div>
+        <div style="--c:var(--ok)"><div class="r">PALETES</div><div class="v">${nf(x.pal)}</div></div>
+        <div style="--c:var(--am)"><div class="r">VOLUMES</div><div class="v">${nf(x.vol)}</div></div></div>
+      <div class="cab"><span>CLIENTE</span><span>AG</span><span>PAL</span><span>VOL</span></div>
+      <div class="corpo" data-b>${x.lin.map(([n,c])=>`<div class="lin">${tiles(n,NOME,flip)}${num(c.n,2,'z',flip)}${c.p?num(c.p,4,'p',flip):tiles('-',4,'mut '+flip)}${c.v?num(c.v,5,'v',flip):tiles('-',5,'mut '+flip)}</div>`).join('')}</div>
+    </section>`; }).join('');
+}
+/* rolagem automática quando não cabe */
+const ROLA = new WeakMap(); let tAnt = performance.now();
+(function rolar(t){ const dt=(t-tAnt)/1000; tAnt=t;
+  document.querySelectorAll('[data-b]').forEach(el=>{ const max=el.scrollHeight-el.clientHeight; let s=ROLA.get(el); if(!s){s={dir:1,pausa:3};ROLA.set(el,s)}
+    if(max<4){el.scrollTop=0;return} if(s.pausa>0){s.pausa-=dt;return} el.scrollTop+=s.dir*40*dt;
+    if(el.scrollTop>=max-1){s.dir=-1;s.pausa=3}else if(el.scrollTop<=0){s.dir=1;s.pausa=3} });
+  requestAnimationFrame(rolar); })(performance.now());
+carregar(); setInterval(carregar, (CFG.intervalo||60)*1000);
+</script>
+</body></html>
