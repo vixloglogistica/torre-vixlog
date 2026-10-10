@@ -9,7 +9,8 @@
   const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const rnd = () => LETRAS[Math.floor(Math.random()*LETRAS.length)];
   const reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const simples = () => window.innerWidth < 1000;
+  // páginas da TV (<html data-placas="sempre">) nunca viram texto; as outras viram texto em tela estreita (celular)
+  const simples = () => document.documentElement.dataset.placas !== 'sempre' && window.innerWidth < 1000;
   const esc = c => c===' ' ? '&nbsp;' : c.replace(/[&<>"']/g, x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
   /* nomes longos: antes de cortar, tira LTDA/ME/EPP e abrevia palavras comuns (só quando não cabe) */
   const ABREV = [[/\b(LTDA|EIRELI|S\.?\/?A\.?|ME|EPP)\b\.?/g,''],[/\bTRANSPORTES?\b/g,'TRANSP.'],[/\bOPERA[ÇC][ÕO]ES\b/g,'OPER.'],[/\bLOG[ÍI]STICAS?\b/g,'LOG.'],
