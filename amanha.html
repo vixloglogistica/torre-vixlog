@@ -7,42 +7,48 @@
 <link rel="icon" href="icone-vixlog.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Pátio Vix Log">
+<link rel="stylesheet" href="tema.css">
 <style>
-  :root{--bg:#070d1f;--panel:#0f1a38;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--az:#5b8cff;--ok:#2ecc8f;--am:#ffb020;--vm:#ff4d5e;--rox:#a98bff}
+  /* layout da programação do dia seguinte — cores e fontes vêm de tema.css */
   *{box-sizing:border-box;margin:0}
   html{font-size:16px} @media (min-width:1200px){html{font-size:calc(100vw / 120)}}
-  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1rem}
+  body{min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1.1rem}
   @media (min-width:1200px){body{height:100vh;overflow:hidden}}
-  header{display:flex;align-items:center;gap:1.2rem;height:5rem;flex:none}
-  header img{height:3.6rem} .sep{width:1px;align-self:stretch;margin:.8rem 0;background:var(--linha)}
-  .tit small{display:block;font-size:.95rem;letter-spacing:.2em;color:var(--mut);font-weight:600}
-  .tit strong{font-size:2.1rem;letter-spacing:.04em;font-weight:800}
+  header{display:flex;align-items:center;gap:1.2rem;min-height:5.6rem;flex:none;flex-wrap:wrap}
+  header img{height:3.7rem;max-width:100%} .sep{width:1px;align-self:stretch;margin:.8rem 0;background:var(--linha)}
+  .tit small{display:block;font:700 1rem/1 var(--f-texto);letter-spacing:.26em;color:var(--mut);margin-bottom:.35rem}
+  .tit strong{font:800 2.7rem/1 var(--f-titulo);letter-spacing:.04em}
   .dt{margin-left:auto;text-align:right}
-  .dt b{display:block;font-size:2.2rem;letter-spacing:.06em;font-weight:800;color:var(--am);text-transform:uppercase}
-  .dt span{font-size:1.1rem;color:var(--mut)}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:.5rem;flex:none}
-  .kpi{background:var(--panel);border:1px solid var(--linha);border-left:.45rem solid var(--c);border-radius:.7rem;padding:.7rem 1.1rem}
-  .kpi .r{font-size:.95rem;letter-spacing:.14em;color:var(--mut);font-weight:700}
-  .kpi .v{font-size:3.4rem;font-weight:800;line-height:1.05}
+  .dt b{display:block;font:800 2.9rem/1 var(--f-titulo);letter-spacing:.05em;color:var(--s-apresentou);text-transform:uppercase}
+  .dt span{font:500 1.15rem var(--f-texto);color:var(--mut)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:.6rem;flex:none}
+  .kpi{background:var(--panel);border:1px solid var(--linha);border-bottom:.3rem solid var(--c);border-radius:.6rem;padding:.6rem 1.1rem;display:flex;flex-direction:column;gap:.4rem;min-width:0}
+  .kpi .r{font:700 1rem/1.1 var(--f-texto);letter-spacing:.14em;color:var(--mut);display:flex;align-items:center;gap:.5rem}
+  .kpi .r::before{content:"";width:.75rem;height:.75rem;border-radius:50%;background:var(--c);box-shadow:0 0 .5rem var(--c)}
+  .z-kp{--w:2.2rem;--h:3.5rem;--fs:2.85rem;--gp:.1rem;--fs-s:2rem}
   main{flex:1;min-height:0;margin-top:.8rem;display:flex}
-  .box{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;flex:1}
-  .cab,.lin{display:grid;grid-template-columns:1fr 11rem 14rem 14rem;column-gap:1.2rem;align-items:center;padding:0 1.6rem}
-  .cab{height:3rem;border-bottom:2px solid var(--linha);font-size:1rem;letter-spacing:.18em;color:var(--mut);font-weight:700;background:linear-gradient(rgba(255,255,255,.05),transparent);flex:none}
+  .box{background:var(--panel);border:1px solid var(--linha);border-radius:.6rem;display:flex;flex-direction:column;min-height:0;overflow:hidden;flex:1}
+  .cab,.lin{display:grid;grid-template-columns:minmax(0,1fr) 9rem 11rem 12rem;column-gap:1.2rem;align-items:center;padding:0 1.6rem}
+  .cab{height:3rem;border-bottom:2px solid var(--linha);font:700 1.02rem/1 var(--f-texto);letter-spacing:.2em;color:var(--mut);flex:none}
+  .cab span:nth-child(n+2){text-align:right}
   .corpo{flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column}
-  .lin{height:4.5rem;flex:none;border-bottom:1px solid rgba(39,57,107,.55)}
-  .lin:nth-child(even){background:rgba(255,255,255,.025)}
-  .fl{display:inline-flex;gap:.12rem}
-  .fl i{font-style:normal;display:grid;place-items:center;width:1.45rem;height:2.9rem;background:linear-gradient(#22346a 0 49%,#14224a 51% 100%);border-radius:.25rem;
-        font-weight:700;font-size:1.95rem;color:#f4f7ff;position:relative;font-family:Consolas,"Segoe UI",monospace}
-  .fl i::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.4)}
-  .fl.p i{color:var(--ok)} .fl.v i{color:var(--am)} .fl.z i{color:#fff} .fl.mut i{color:#4a5a8a}
-  .fl.flip i{animation:flap .55s ease-out both;animation-delay:calc(var(--k) * 22ms)}
-  @keyframes flap{0%{transform:rotateX(-90deg);opacity:.2}60%{transform:rotateX(12deg);opacity:1}100%{transform:none}}
-  .tot{background:#14275a;border-top:2px solid var(--linha);height:4.8rem;flex:none}
-  .tot .rot{font-size:1.3rem;letter-spacing:.14em;font-weight:800}
-  .cab span:nth-child(n+2){text-align:center} .lin>.fl{justify-self:center} .lin>.fl:first-child,.tot>.rot{justify-self:start}
-  .vazio{margin:auto;color:var(--mut);font-size:1.3rem;letter-spacing:.12em;text-align:center;padding:3rem}
-  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--vm);color:#ffb3bb;padding:.7rem 1rem;border-radius:.7rem;display:none;z-index:5}
+  .lin{min-height:4.5rem;flex:none;border-bottom:1px solid color-mix(in srgb,var(--linha) 70%,transparent)}
+  .lin:nth-child(even){background:rgba(255,255,255,.022)}
+  .lin>span{display:flex;justify-content:flex-end;min-width:0}
+  .lin>span:first-child{justify-content:flex-start}
+  .z-cl{--w:1.25rem;--h:2.8rem;--fs:2.15rem}
+  .z-n{--w:1.25rem;--h:2.8rem;--fs:2.15rem}
+  .z-n.p{--cc:var(--s-concluido)} .z-n.v{--cc:var(--s-apresentou)} .z-n.z{--cc:var(--txt)}
+  .tot{background:color-mix(in srgb,var(--marca) 14%,transparent);border-top:2px solid var(--marca);border-bottom:0;min-height:5rem;flex:none}
+  .tot .rot{font:800 1.5rem/1 var(--f-titulo);letter-spacing:.2em}
+  .vazio{margin:auto;color:var(--mut);font:700 1.4rem var(--f-titulo);letter-spacing:.16em;text-align:center;padding:3rem}
+  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);display:none;z-index:5;max-width:92vw}
+  @media (max-width:999px){
+    .tit strong{font-size:1.6rem} .dt{margin-left:0;text-align:left} .dt b{font-size:1.7rem}
+    .kpis{grid-template-columns:1fr 1fr} .cab,.lin{grid-template-columns:minmax(0,1fr) 3rem 4rem 4.5rem;padding:0 .8rem;column-gap:.5rem}
+    .cab{font-size:.7rem;letter-spacing:.08em} .lin{min-height:3.2rem;padding-block:.4rem}
+    .kpi .r{font-size:.78rem;letter-spacing:.08em} .z-kp{--fs-s:1.7rem}
+  }
 </style>
 </head>
 <body>
@@ -59,8 +65,9 @@
     <div class="lin tot" id="total"></div>
   </div>
 </main>
-<div id="erro"></div>
+<div id="erro" class="aviso-erro"></div>
 <script src="config.js"></script>
+<script src="placas.js"></script>
 <script>
 /* Programação do dia seguinte — lê "amanha" do Worker (próximo dia com agendamentos; sexta mostra segunda, sábado se houver) */
 const CFG = Object.assign({api:'', intervalo:60}, window.TORRE_CONFIG||{});
@@ -96,14 +103,24 @@ function desenhar(a){
   const its = a.itens || [], cli = {};
   its.forEach(i=>{ const n = curto(i.cliente)||bonito(i.cliente)||'—'; const c = (cli[n] ||= {n:0,p:0,v:0}); c.n++; if(i.tipo==='Paletes') c.p += +i.qtd||0; else if(i.tipo==='Volumes') c.v += +i.qtd||0; });
   const pal = Object.values(cli).reduce((s,c)=>s+c.p,0), vol = Object.values(cli).reduce((s,c)=>s+c.v,0);
-  $('#kpis').innerHTML = [['AGENDAMENTOS',its.length,'var(--az)'],['CLIENTES',Object.keys(cli).length,'var(--rox)'],['PALETES',nf(pal),'var(--ok)'],['VOLUMES',nf(vol),'var(--am)']]
-    .map(([r,v,c])=>`<div class="kpi" style="--c:${c}"><div class="r">${r}</div><div class="v">${v}</div></div>`).join('');
+  const kp = [['AGENDAMENTOS',its.length,'var(--marca)'],['CLIENTES',Object.keys(cli).length,'var(--s-cross)'],['PALETES',nf(pal),'var(--s-concluido)'],['VOLUMES',nf(vol),'var(--s-apresentou)']];
+  const assK = kp.map(([,v])=>String(v).length).join('|');
+  if ($('#kpis').dataset.a !== assK){ $('#kpis').dataset.a = assK; $('#kpis').innerHTML = kp.map(([r,v,c])=>`<div class="kpi" style="--c:${c}"><div class="r">${r}</div><div class="v">${Placas.html(String(v).length,'','z-kp tnum')}</div></div>`).join(''); }
+  [...$('#kpis').children].forEach((el,j)=>Placas.troca(el.querySelector('.fl'), String(kp[j][1]), 150+j*90));
   const lin = Object.entries(cli).sort((x,y)=>y[1].n-x[1].n || (y[1].p+y[1].v)-(x[1].p+x[1].v));
-  const fl = (v,n,cls,flip) => tiles(v?nf(v).replace(/\./g,''):'', n, cls+' '+flip);
-  const num = (v,n,cls,flip) => `<span class="fl ${cls} ${flip}">`+[...String(v).padStart(n,' ')].map((c,k)=>`<i style="--k:${k}">${c===' '?'&nbsp;':c}</i>`).join('')+'</span>';
-  const flip = SIG !== JSON.stringify(lin) ? 'flip' : ''; SIG = JSON.stringify(lin);
-  $('#lista').innerHTML = lin.length ? lin.map(([n,c])=>`<div class="lin">${tiles(n,44,flip)}${num(c.n,2,'z',flip)}${c.p?num(c.p,4,'p',flip):tiles('-',4,'mut '+flip)}${c.v?num(c.v,5,'v',flip):tiles('-',5,'mut '+flip)}</div>`).join('') : '<div class="vazio">— NENHUM AGENDAMENTO —</div>';
-  $('#total').innerHTML = `<span class="rot">TOTAL</span>${num(its.length,2,'z','')}${num(pal,4,'p','')}${num(vol,5,'v','')}`;
+  // linhas: as placas só viram no que mudou desde a última leitura
+  const nomes = lin.map(([n])=>n).join('|');
+  if (SIG !== nomes || !$('#lista').children.length){
+    SIG = nomes;
+    $('#lista').innerHTML = lin.length ? lin.map(([n])=>`<div class="lin" data-n="${esc(n)}"><span>${Placas.html(44,'','z-cl')}</span><span>${Placas.html(2,'','z-n z tnum')}</span><span>${Placas.html(4,'','z-n p tnum')}</span><span>${Placas.html(5,'','z-n v tnum')}</span></div>`).join('') : '<div class="vazio">— NENHUM AGENDAMENTO —</div>';
+  }
+  const pad = (v,n) => String(v).padStart(n,' ');
+  [...$('#lista').querySelectorAll('.lin')].forEach((el,k)=>{ const [n,c] = lin[k], f = el.querySelectorAll('.fl'), d0 = 200 + k*90;
+    Placas.troca(f[0], n, d0); Placas.troca(f[1], pad(c.n,2), d0+60);
+    Placas.troca(f[2], pad(c.p?c.p:'-',4), d0+90); Placas.troca(f[3], pad(c.v?c.v:'-',5), d0+120);
+    [[f[2],c.p],[f[3],c.v]].forEach(([e,v])=> v ? e.style.removeProperty('--cc') : e.style.setProperty('--cc','var(--mut)')); });
+  if (!$('#total').children.length) $('#total').innerHTML = `<span><span class="rot">TOTAL</span></span><span>${Placas.html(3,'','z-n z tnum')}</span><span>${Placas.html(4,'','z-n p tnum')}</span><span>${Placas.html(5,'','z-n v tnum')}</span>`;
+  const ft = $('#total').querySelectorAll('.fl'); Placas.troca(ft[0], pad(its.length,3), 300); Placas.troca(ft[1], pad(pal,4), 360); Placas.troca(ft[2], pad(vol,5), 420);
 }
 let SIG = '';
 const tiles = (txt, n, cls='') => { const t = String(txt||'').toUpperCase().slice(0,n).padEnd(n,' ');

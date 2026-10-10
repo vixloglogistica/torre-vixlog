@@ -7,9 +7,10 @@
 <link rel="icon" href="icone-vixlog.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Pátio Vix Log">
+<link rel="stylesheet" href="tema.css">
 <style>
-  :root{--bg:#070d1f;--panel:#0f1a38;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--az:#0A6BFA;--ok:#2ecc8f;--am:#ffb020}
-  *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+  /* cores e fontes vêm de tema.css */
+  *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--f-texto)}
   header{display:flex;align-items:center;gap:.8rem;padding:.9rem 1rem;border-bottom:1px solid var(--linha);position:sticky;top:0;background:var(--bg);z-index:2}
   header img{height:34px} header h1{font-size:1.1rem;margin:0;line-height:1.1} header small{color:var(--mut);display:block;font-weight:500;font-size:.8rem}
   main{max-width:760px;margin:0 auto;padding:1rem}
@@ -17,17 +18,19 @@
   .barra input[type=search]{flex:1;min-width:10rem;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--linha);background:var(--panel);color:var(--txt);font-size:1rem}
   .barra label{display:flex;align-items:center;gap:.4rem;color:var(--mut);font-size:.95rem}
   h2{font-size:.85rem;letter-spacing:.14em;color:var(--mut);margin:1.2rem 0 .5rem}
-  .card{display:flex;align-items:center;gap:.8rem;background:var(--panel);border:1px solid var(--linha);border-left:5px solid var(--c,#5b8cff);border-radius:.7rem;padding:.8rem .9rem;margin-bottom:.6rem}
+  .card{display:flex;align-items:center;gap:.8rem;background:var(--panel);border:1px solid var(--linha);border-left:5px solid var(--c,var(--marca));border-radius:.7rem;padding:.8rem .9rem;margin-bottom:.6rem}
   .info{flex:1;min-width:0} .tr{font-weight:800;font-size:1.05rem;text-transform:uppercase;overflow-wrap:anywhere}
-  .cl{color:#c5d2f5;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .mt{color:var(--mut);font-size:.82rem;margin-top:.2rem}
+  .cl{color:var(--txt2);font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .mt{color:var(--mut);font-size:.82rem;margin-top:.2rem}
   .st{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--c)}
-  button{border:0;border-radius:.7rem;background:var(--az);color:#fff;font-weight:800;font-size:1rem;padding:.9rem 1.1rem;min-width:7.2rem;cursor:pointer}
-  button:active{transform:scale(.97)} button[disabled]{background:#24386e;color:#9db0e0;cursor:default}
-  button.ok{background:var(--ok);color:#042417}
+  button{border:0;border-radius:.7rem;background:var(--marca-forte);color:#fff;font-weight:800;font-size:1rem;padding:.9rem 1.1rem;min-width:7.2rem;cursor:pointer}
+  button:active{transform:scale(.97)} button[disabled]{background:var(--card2);color:var(--mut);cursor:default}
+  button.ok{background:var(--s-concluido);color:var(--sobre-cor)}
   .vazio{color:var(--mut);text-align:center;padding:2rem 0}
-  #msg{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--linha);padding:.7rem 1rem;border-radius:.7rem;display:none;max-width:92vw}
-  #msg.erro{border-color:#ff4d5e;color:#ffb3bb}
+  #msg{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:var(--panel);border:1px solid var(--linha);padding:.7rem 1rem;border-radius:.7rem;display:none;max-width:92vw}
+  #msg.erro{border-color:var(--s-noshow);color:#ffd9dd}
   #quem{display:none}
+  header h1{font-family:var(--f-titulo);font-size:1.5rem;letter-spacing:.03em} .tr{font-family:var(--f-titulo);font-size:1.3rem;letter-spacing:.02em}
+  button{font-family:var(--f-titulo);font-size:1.15rem;letter-spacing:.06em}
 </style>
 </head>
 <body>
@@ -48,7 +51,7 @@ const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}}, lsSet
 let TOKEN = Q.get('t') || ''; if (TOKEN) { lsSet('torre_t', TOKEN); } else TOKEN = lsGet('torre_t') || '';
 const base = CFG.api.replace(/\/$/,'');
 const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const ETAPAS = {apresentou:['VEÍCULO SE APRESENTOU','#ffb020'], aguardando_doca:['AGUARDANDO DOCA','#ff7a3d'], em_andamento:['EM OPERAÇÃO','#a98bff'], agendado:['AGENDADO','#5b8cff']};
+const ETAPAS = {apresentou:['VEÍCULO SE APRESENTOU','var(--s-apresentou)'], aguardando_doca:['AGUARDANDO DOCA','var(--s-doca)'], em_andamento:['EM OPERAÇÃO','var(--s-operacao)'], agendado:['AGENDADO','var(--s-agendado)']};
 const ORDEM = ['apresentou','aguardando_doca','em_andamento','agendado'];
 let ITENS = [], LIDOS = {};
 function msg(t, erro){ const m=document.getElementById('msg'); m.textContent=t; m.className=erro?'erro':''; m.style.display='block'; clearTimeout(msg.t); msg.t=setTimeout(()=>m.style.display='none', 3500); }

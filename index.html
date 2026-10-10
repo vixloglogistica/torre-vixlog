@@ -7,130 +7,133 @@
 <link rel="icon" type="image/svg+xml" href="icone-vixlog.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Pátio Vix Log">
+<link rel="stylesheet" href="tema.css">
 <style>
-  :root{
-    --bg:#070d1f; --panel:#0e1832; --card:#16244a; --card2:#1b2c58; --linha:#27396b;
-    --txt:#eef3ff; --mut:#8fa1cc; --azul:#5b8cff; --ambar:#ffb020; --laranja:#ff7a3d;
-    --verde:#2ecc8f; --verm:#ff4d5e; --roxo:#a98bff;
-  }
+  /* layout do painel da TV — cores e fontes vêm de tema.css */
   *{box-sizing:border-box;margin:0;padding:0}
   html{font-size:calc(100vw / 120)}              /* 16px num monitor 1920 de largura; escala com a TV */
-  body{background:var(--bg);color:var(--txt);font-family:"Segoe UI",Roboto,Arial,sans-serif;
-       height:100vh;overflow:hidden;display:grid;grid-template-rows:5.6rem 6.4rem 1fr 2.4rem;gap:.7rem;padding:.8rem 1rem .6rem}
-  .tnum{font-variant-numeric:tabular-nums}
+  body{height:100vh;overflow:hidden;display:grid;grid-template-rows:6.2rem 6rem 1fr 2.6rem;gap:.75rem;padding:.8rem 1.1rem .6rem}
 
   /* ---------- topo ---------- */
   header{display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
-  .marca{display:flex;align-items:center;gap:1rem}
-  .logo img{height:3.7rem;width:auto;display:block}
-  .titulo{border-left:2px solid var(--linha);padding-left:1rem;line-height:1.25}
-  .titulo small{display:block;font-size:.95rem;letter-spacing:.2em;color:var(--mut);font-weight:600}
-  .titulo strong{font-size:2rem;letter-spacing:.06em;font-weight:800}
-  .modo{display:inline-block;margin-left:.8rem;padding:.15rem .8rem;border-radius:99px;font-size:1.15rem;font-weight:800;letter-spacing:.12em;vertical-align:.25rem}
-  .modo.rec{background:rgba(91,140,255,.18);color:var(--azul);border:1px solid var(--azul)}
-  .modo.exp{background:rgba(255,176,32,.16);color:var(--ambar);border:1px solid var(--ambar)}
-  .relogio{display:flex;align-items:center;gap:1.4rem}
+  .marca{display:flex;align-items:center;gap:1.2rem}
+  .logo img{height:3.8rem;width:auto;display:block}
+  .titulo{display:grid;grid-template-columns:auto auto;justify-content:start;align-items:center;column-gap:.9rem;row-gap:.35rem;line-height:1}
+  .titulo small{grid-column:1/-1}
+  .titulo small{display:block;font:700 1.02rem/1 var(--f-texto);letter-spacing:.26em;color:var(--mut)}
+  .titulo strong{font:800 3.1rem/1 var(--f-titulo);letter-spacing:.04em}
+  .modo{justify-self:start;padding:.42rem .85rem;border-radius:99px;font:800 1.2rem/1 var(--f-texto);letter-spacing:.16em}
+  .modo.rec{background:var(--marca);color:var(--sobre-cor)}
+  .modo.exp{background:var(--s-apresentou);color:var(--sobre-cor)}
+  .relogio{display:flex;align-items:center;gap:1.3rem}
   .data{text-align:right;line-height:1.15}
-  .data .d1{font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-  .data .d2{font-size:1.05rem;color:var(--mut)}
-  .hora{display:flex;gap:.28rem;align-items:center}
-  .dig{background:linear-gradient(#1a2a56 0 49%,#12204a 51% 100%);border:1px solid var(--linha);border-radius:.45rem;
-       width:2.9rem;height:4rem;display:grid;place-items:center;font-size:3rem;font-weight:700;position:relative}
-  .dig::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(0,0,0,.55)}
-  .sep{font-size:2.6rem;font-weight:700;color:var(--mut);animation:pisca 1s steps(2) infinite}
-  @keyframes pisca{50%{opacity:.15}}
+  .data .d1{font:700 1.65rem/1.1 var(--f-titulo);text-transform:uppercase;letter-spacing:.1em}
+  .data .d2{font:500 1.12rem var(--f-texto);color:var(--mut)}
+  .hora{display:flex;gap:.3rem;align-items:flex-end}
+  .hora .sep{font:800 2.8rem/1 var(--f-titulo);color:var(--mut);align-self:center;animation:tm-pisca 1s steps(2) infinite}
+  .z-ck{--w:2.5rem;--h:4.2rem;--fs:3.4rem;--gp:.14rem}
+  .z-ck2{--w:1.6rem;--h:2.7rem;--fs:2.1rem;--gp:.1rem;--cc:var(--mut)}
 
   /* ---------- indicadores ---------- */
   .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:.8rem}
-  .kpi{background:var(--panel);border:1px solid var(--linha);border-left:.45rem solid var(--c,var(--azul));border-radius:.7rem;
-       padding:.5rem 1rem;display:flex;flex-direction:column;justify-content:center;min-width:0}
-  .kpi .r{font-size:.95rem;letter-spacing:.14em;color:var(--mut);font-weight:700;white-space:nowrap}
-  .kpi .v{font-size:3rem;font-weight:800;line-height:1;margin-top:.1rem}
-  .kpi .v small{font-size:1.2rem;color:var(--mut);font-weight:600;margin-left:.3rem}
-  .kpi{position:relative}
-  .kpi .p{position:absolute;right:1rem;bottom:.75rem;font-size:1.7rem;font-weight:800;color:var(--c);opacity:.9}
-  .kpi .p small{font-size:.9rem;font-weight:700;color:var(--mut);margin-left:.05rem}
+  .kpi{position:relative;background:var(--panel);border:1px solid var(--linha);border-bottom:.3rem solid var(--c,var(--marca));border-radius:.6rem;
+       padding:.5rem 1rem;display:flex;flex-direction:column;justify-content:center;gap:.35rem;min-width:0}
+  .kpi .r{font:700 1rem/1.15 var(--f-texto);letter-spacing:.13em;color:var(--mut);display:flex;align-items:center;gap:.5rem;white-space:nowrap}
+  .kpi .r::before{content:"";width:.75rem;height:.75rem;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 .5rem var(--c)}
+  .kpi .v{line-height:1}
+  .kpi .p{position:absolute;right:1rem;bottom:.8rem;font:800 1.75rem/1 var(--f-titulo);color:var(--c)}
+  .kpi .p small{font-size:1rem;color:var(--mut);margin-left:.05rem}
+  .z-kp{--w:2rem;--h:3.2rem;--fs:2.6rem;--gp:.1rem}
 
-  /* ---------- quadro ---------- */
+  /* ---------- quadro (colunas por etapa · tecla V) ---------- */
   main{display:grid;gap:.8rem;min-height:0}
-  .col{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-  .col-h{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--linha);
-         border-top:.4rem solid var(--c);background:linear-gradient(rgba(255,255,255,.04),transparent)}
-  .col-h h2{font-size:1.25rem;letter-spacing:.1em;font-weight:800;color:var(--c)}
-  .col-h .n{font-size:2.1rem;font-weight:800;min-width:3rem;text-align:center;background:rgba(255,255,255,.07);border-radius:.5rem;padding:0 .6rem}
+  .col{background:var(--panel);border:1px solid var(--linha);border-top:.45rem solid var(--c);border-radius:.7rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .col-h{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.65rem 1rem;background:linear-gradient(color-mix(in srgb,var(--c) 16%,transparent),transparent)}
+  .col-h h2{font:800 1.5rem/1.05 var(--f-titulo);letter-spacing:.06em;color:var(--c)}
+  .col-h .n{font:800 2.3rem/1 var(--f-titulo);min-width:3.2rem;text-align:center;background:color-mix(in srgb,var(--c) 22%,transparent);border-radius:.45rem;padding:.1rem .6rem}
   .col-b{flex:1;overflow:hidden;padding:.6rem;display:flex;flex-direction:column;gap:.55rem;min-height:0}
-  .vazio{margin:auto;color:var(--mut);font-size:1.15rem;letter-spacing:.12em;opacity:.6;text-align:center}
+  .vazio{margin:auto;color:var(--mut);font:700 1.3rem var(--f-titulo);letter-spacing:.16em;opacity:.75;text-align:center}
 
-  .card{background:var(--card);border:1px solid var(--linha);border-left:.35rem solid var(--c);border-radius:.6rem;padding:.6rem .8rem;flex:none}
+  .card{background:var(--card);border-left:.45rem solid var(--c);border-radius:.55rem;padding:.6rem .8rem;flex:none}
   .card .t{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
-  .card .tr{font-size:1.55rem;font-weight:800;line-height:1.1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-transform:uppercase;overflow-wrap:anywhere}
-  .card .tp{font-size:1.5rem;font-weight:800;white-space:nowrap}
-  .card .cl{font-size:1.1rem;color:#c5d2f5;margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .card .mt{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem;align-items:center;font-size:1rem;color:var(--mut)}
-  .chip{background:rgba(255,255,255,.09);border-radius:.35rem;padding:.05rem .5rem;color:var(--txt);font-weight:700;letter-spacing:.04em}
-  .chip.doca{background:var(--c);color:#06101f}
-  .chip.cross{background:#7c4dff;color:#fff}
-  .ch .ib .cross{background:#7c4dff;color:#fff}
-  .placa{font-family:Consolas,"Courier New",monospace;font-weight:700;color:var(--txt);letter-spacing:.08em;border:1px solid var(--linha);border-radius:.3rem;padding:0 .4rem}
-  .card.ok .tp{color:var(--verde)} .card.atencao .tp{color:var(--ambar)}
-  .card.critico{background:#3a1626;border-color:var(--verm)} .card.critico .tp{color:var(--verm);animation:pisca 1s steps(2) infinite}
-  .card.ontem::after{content:"DIA ANTERIOR";display:inline-block;margin-top:.35rem;font-size:.8rem;letter-spacing:.12em;color:var(--verm);font-weight:800}
+  .card .tr{font:700 1.85rem/1.05 var(--f-titulo);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-transform:uppercase;overflow-wrap:break-word}
+  .card .tp{font:800 1.95rem/1 var(--f-titulo);white-space:nowrap}
+  .card .cl{font:600 1.18rem/1.2 var(--f-texto);color:var(--mut);margin-top:.2rem;overflow-wrap:break-word}
+  .card .mt{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem;align-items:center;font:600 1.02rem var(--f-texto);color:var(--mut)}
+  .chip{background:var(--panel);border-radius:.35rem;padding:.25rem .5rem;color:var(--txt);font-weight:700;letter-spacing:.03em}
+  .chip.doca{background:var(--txt);color:var(--bg);font:800 1.2rem/1 var(--f-titulo);letter-spacing:.06em}
+  .chip.cross{background:transparent;border:2px solid var(--s-cross);color:var(--s-cross)}
+  .placa{font-family:var(--f-mono);font-weight:700;color:var(--txt);letter-spacing:.06em;border:1px solid var(--linha);border-radius:.3rem;padding:.1rem .4rem}
+  .card.ok .tp{color:var(--s-concluido)} .card.atencao .tp{color:var(--s-apresentou)}
+  .card.critico{outline:3px solid var(--s-noshow);outline-offset:-3px} .card.critico .tp{color:var(--s-noshow);animation:tm-pisca 1s steps(2) infinite}
+  .card.ontem::after{content:"DIA ANTERIOR";display:inline-block;margin-top:.4rem;font:800 .9rem/1 var(--f-texto);letter-spacing:.08em;color:var(--sobre-cor);background:var(--s-noshow);padding:.25rem .4rem;border-radius:.25rem}
   .card.novo{animation:entra 1.2s ease-out}
   @keyframes entra{0%{box-shadow:0 0 0 .35rem var(--c);transform:scale(1.03)}100%{box-shadow:none;transform:none}}
-  .concl .card{padding:.4rem .7rem;background:#102a33}
-  .concl .tr{font-size:1.2rem} .concl .tp{font-size:1.05rem;color:var(--verde)}
-  .concl .cl{font-size:.95rem}
+  .concl .card{padding:.4rem .7rem}
+  .concl .tr{font-size:1.4rem} .concl .tp{font-size:1.5rem;color:var(--s-concluido)}
+  .concl .cl{font-size:1.02rem}
 
-
-  /* ---------- visual "painel de aeroporto" ---------- */
-  .bd{background:var(--panel);border:1px solid var(--linha);border-radius:.8rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-  .bd-h,.row{display:grid;grid-template-columns:16rem 24rem 1fr 11.5rem 7rem 7.5rem 8.5rem;align-items:center;column-gap:1rem;padding:0 1.2rem}
-  .bd-h{height:3rem;border-bottom:2px solid var(--linha);font-size:1rem;letter-spacing:.18em;color:var(--mut);font-weight:700;background:linear-gradient(rgba(255,255,255,.05),transparent)}
-  .bd-b{flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column}
-  .row{height:4.05rem;flex:none;border-bottom:1px solid rgba(39,57,107,.55)}
-  .row:nth-child(even){background:rgba(255,255,255,.025)}
-  .stt{font-weight:800;letter-spacing:.07em;font-size:1.12rem;color:var(--c);border-left:.35rem solid var(--c);padding-left:.7rem;line-height:1.1}
-  .fl{display:inline-flex;gap:.1rem}
-  .fl i{font-style:normal;display:grid;place-items:center;width:1.12rem;height:2.1rem;background:linear-gradient(#22346a 0 49%,#14224a 51% 100%);
-        border-radius:.2rem;font-weight:700;font-size:1.4rem;color:#f4f7ff;position:relative;font-family:Consolas,"Segoe UI",monospace}
-  .fl i::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.4)}
-  .fl.m i{width:.9rem;height:1.55rem;font-size:1.05rem;color:#c9d6f7}
-  .fl.p i{width:1.3rem;font-size:1.3rem;color:#ffd87a}
-  .fl.d i{width:1.5rem;color:var(--ambar)}
-  .fl.t i{width:1.15rem;color:#fff}
-  .fl.flip i{animation:flap .55s ease-out both;animation-delay:calc(var(--k) * 22ms)}
-  @keyframes flap{0%{transform:rotateX(-90deg);opacity:.2}60%{transform:rotateX(12deg);opacity:1}100%{transform:none}}
-  .row .tmp .fl i{color:var(--verde)} .row.atencao .tmp .fl i{color:var(--ambar)} .row.critico .tmp .fl i{color:var(--verm);animation:pisca 1s steps(2) infinite}
-  .row.crit-bg{background:rgba(255,77,94,.1)}
-  .row.fim .fl i{color:#8fa1cc}
+  /* ---------- painel de aeroporto (visual padrão da TV) ---------- */
+  .bd{background:var(--panel);border:1px solid var(--linha);border-radius:.6rem;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .bd-h,.row{display:grid;grid-template-columns:15.5rem 34.4rem 30.8rem 8.1rem 3.3rem 5.8rem 8.4rem;align-items:center;column-gap:1.3rem;padding:0 1.3rem}
+  .bd-h{height:3rem;flex:none;border-bottom:2px solid var(--linha);font:700 1.02rem/1 var(--f-texto);letter-spacing:.2em;color:var(--mut)}
+  .bd-b{flex:1;overflow:hidden;min-height:0;position:relative}
+  .trilho{position:relative}
+  .row{position:absolute;left:0;right:0;top:0;height:4.05rem;border-bottom:1px solid color-mix(in srgb,var(--linha) 70%,transparent);transition:transform .9s cubic-bezier(.6,.05,.25,1)}
+  .bd-b.ini .row{transition:none}
+  .row.par{background:rgba(255,255,255,.022)}
+  .row.entra{animation:abre .7s ease-out}
+  @keyframes abre{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+  .row .cel{display:flex;align-items:center;gap:.5rem;min-width:0}
+  .z-tr{--w:1.22rem;--h:2.7rem;--fs:2.1rem}
+  .z-cl{--w:.86rem;--h:2.1rem;--fs:1.55rem;--cc:var(--txt2)}
+  .z-pl{--w:1.05rem;--h:2.3rem;--fs:1.65rem}
+  .z-dk{--w:1.5rem;--h:2.7rem;--fs:2.1rem;--cc:var(--marca)}
+  .z-hr{--w:1.05rem;--h:2.3rem;--fs:1.65rem}
+  .z-tm{--w:1.1rem;--h:2.5rem;--fs:1.85rem;--cc:var(--s-concluido)}
+  .row.atencao .tmp .fl{--cc:var(--s-apresentou)}
+  .row.critico{background:linear-gradient(90deg,color-mix(in srgb,var(--s-noshow) 22%,transparent),transparent 55%)}
+  .row.critico .tmp .fl{--cc:var(--s-noshow);animation:tm-pisca 1s steps(2) infinite}
+  .row.fim .fl{--cc:var(--mut)}
+  .row.fim .tmp .fl{--cc:var(--s-concluido)}
+  .row.cross .z-dk{--cc:var(--s-cross)}
   .mais{height:3rem;display:grid;place-items:center;color:var(--mut);letter-spacing:.14em;font-size:1.05rem;flex:none}
 
   /* ---------- rodapé ---------- */
-  footer{display:flex;justify-content:space-between;align-items:center;font-size:1.05rem;color:var(--mut);gap:1rem;white-space:nowrap}
+  footer{display:flex;justify-content:space-between;align-items:center;font:500 1.12rem var(--f-texto);color:var(--mut);gap:1rem;white-space:nowrap}
   footer b{color:var(--txt)} footer .meio{overflow:hidden;text-overflow:ellipsis;flex:1;text-align:center}
-  .st{display:inline-flex;align-items:center;gap:.5rem}
-  .led{width:.8rem;height:.8rem;border-radius:50%;background:var(--verde);box-shadow:0 0 .6rem var(--verde)}
-  .led.off{background:var(--verm);box-shadow:0 0 .6rem var(--verm);animation:pisca 1s steps(2) infinite}
-  .led.demo{background:var(--roxo);box-shadow:0 0 .6rem var(--roxo)}
-  #som{cursor:pointer;padding:.1rem .8rem;border-radius:99px;border:1px solid var(--linha);background:var(--panel);color:var(--txt);font:inherit}
-  #som.mudo{border-color:var(--verm);color:var(--verm);font-weight:800;animation:pisca 1.4s steps(2) infinite}
+  .st{display:inline-flex;align-items:center;gap:.55rem;padding:.2rem .7rem .2rem .2rem;border-radius:99px}
+  .led{width:.85rem;height:.85rem;border-radius:50%;background:var(--s-concluido);box-shadow:0 0 .6rem var(--s-concluido)}
+  .led.off{background:var(--s-noshow);box-shadow:0 0 .6rem var(--s-noshow);animation:tm-pisca 1s steps(2) infinite}
+  .st:has(.led.off){background:var(--s-noshow);color:#fff;font-weight:800;letter-spacing:.04em;padding-left:.5rem}
+  .st:has(.led.off) .led{background:#fff;box-shadow:none}
+  .led.demo{background:var(--demo);box-shadow:0 0 .6rem var(--demo)}
+  #som{cursor:pointer;padding:.15rem .9rem;border-radius:99px;border:1px solid var(--linha);background:var(--panel);color:var(--txt);font:inherit}
+  #som.mudo{border-color:var(--s-noshow);color:var(--s-noshow);font-weight:800;animation:tm-pisca 1.4s steps(2) infinite}
 
-  /* ---------- chamada ---------- */
-  #kpi{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:30;background:var(--bg)}
-  #chamada{position:fixed;inset:0;display:none;place-items:center;z-index:50;background:rgba(3,7,18,.9);backdrop-filter:blur(6px)}
+  /* ---------- telas de rotação (KPIs / dia seguinte) e chamada ---------- */
+  #kpi{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:30;background:var(--bg);transform-origin:50% 0;animation:tm-entra .6s ease-out}
+  #chamada{position:fixed;inset:0;display:none;place-items:center;z-index:50;background:rgba(2,6,16,.9);backdrop-filter:blur(6px)}
   #chamada.on{display:grid}
-  .ch{width:88vw;text-align:center;border-radius:2rem;padding:3.4rem 3rem;background:linear-gradient(160deg,#1a3a8f,#0c1c4a 70%);
-      border:.35rem solid var(--c);box-shadow:0 0 6rem var(--c);animation:pulso 1.4s ease-in-out infinite}
-  @keyframes pulso{50%{box-shadow:0 0 1.5rem var(--c)}}
-  .ch .e{font-size:2.4rem;letter-spacing:.3em;font-weight:800;color:var(--c)}
-  .ch .tr{font-size:7.2rem;font-weight:900;line-height:1.02;margin:1.2rem 0 .8rem;text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere}
-  .ch .cl{font-size:3rem;color:#d3defa;font-weight:600}
-  .ch .ib{display:flex;justify-content:center;gap:1.4rem;margin-top:2rem;flex-wrap:wrap}
-  .ch .ib span{font-size:2.6rem;font-weight:800;background:rgba(255,255,255,.12);padding:.2rem 1.2rem;border-radius:.8rem}
-  .ch .ib .doca{background:var(--c);color:#06101f}
-  .ch .fila{margin-top:1.6rem;font-size:1.5rem;color:var(--mut);letter-spacing:.1em}
+  .ch{width:92vw;text-align:center;border-radius:1.6rem;padding:3rem 2.5rem 2.6rem;background:var(--panel);
+      border:.35rem solid var(--c);box-shadow:0 0 6rem color-mix(in srgb,var(--c) 55%,transparent);animation:pulso 1.4s ease-in-out infinite;
+      display:flex;flex-direction:column;align-items:center;gap:1.3rem}
+  @keyframes pulso{50%{box-shadow:0 0 1.5rem color-mix(in srgb,var(--c) 40%,transparent)}}
+  .ch .e{font:800 2.5rem/1 var(--f-titulo);letter-spacing:.3em;color:var(--c)}
+  .ch .tr{display:flex;justify-content:center}
+  .ch .cl{display:flex;justify-content:center}
+  .z-chT{--w:3.35rem;--h:6rem;--fs:4.9rem;--gp:.16rem}
+  .z-chC{--w:2rem;--h:3.4rem;--fs:2.7rem;--gp:.12rem;--cc:var(--txt2)}
+  .ch .ib{display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap}
+  .ch .ib span{font:800 2.6rem/1 var(--f-titulo);background:color-mix(in srgb,var(--txt) 12%,transparent);padding:.45rem 1.2rem;border-radius:.7rem}
+  .ch .ib .doca{background:var(--c);color:var(--sobre-cor)}
+  .ch .ib .cross{background:transparent;border:3px solid var(--s-cross);color:var(--s-cross)}
+  .ch .fila{font:600 1.5rem var(--f-texto);color:var(--mut);letter-spacing:.1em}
 
-  #erro{position:fixed;left:50%;transform:translateX(-50%);bottom:3.4rem;background:#3a1626;border:1px solid var(--verm);color:#ffd7dc;padding:.5rem 1.4rem;border-radius:.6rem;font-size:1.1rem;display:none;z-index:40}
+  #erro{position:fixed;left:50%;transform:translateX(-50%);bottom:3.6rem;display:none;z-index:40}
+  body:has(#led.off) .carregando{font-size:0;animation:none}
+  body:has(#led.off) .carregando::after{content:"— SEM DADOS: VEJA O AVISO ABAIXO —";font-size:1.3rem}
+  @media (prefers-reduced-motion: reduce){.row{transition:none}.row.entra,#kpi,.ch{animation:none}}
 </style>
 </head>
 <body>
@@ -157,9 +160,10 @@
 
 <iframe id="kpi" title="Painel Logístico KPIs" style="display:none"></iframe>
 <div id="chamada"></div>
-<div id="erro"></div>
+<div id="erro" class="aviso-erro"></div>
 
 <script src="config.js"></script>
+<script src="placas.js"></script>
 <script>
 /* =====================================================================
    CONFIGURAÇÃO — o endereço do proxy fica em config.js; o token vai na URL (?t=...)
@@ -187,6 +191,7 @@ const CFG = Object.assign({
   chamadaSeg: 12,          // quanto tempo a chamada fica na tela
   maxAtrasoChamadaMin: 30, // não chama de novo algo que mudou há mais que isso (ex.: TV reiniciada)
   falar: true,             // voz "Transportadora X, cliente Y, se apresentou"
+  vozClienteNomes: 2,      // quantos nomes do cliente a voz fala ("Comercial Hello"); 0 = nome completo
 }, window.TORRE_CONFIG || {});
 
 const Q = new URLSearchParams(location.search);
@@ -199,12 +204,12 @@ if (TOKEN) lsSet('torre_t', TOKEN); else TOKEN = lsGet('torre_t') || '';
 
 /* ---------- etapas e quadros ---------- */
 const ETAPA = {
-  agendado:        {nome:'AGENDADO',            cor:'#5b8cff'},
-  apresentou:      {nome:'VEÍCULO SE APRESENTOU', cor:'#ffb020'},
-  aguardando_doca: {nome:'AGUARDANDO DOCA',     cor:'#ff7a3d'},
-  em_andamento:    {nome:'EM RECEBIMENTO',      cor:'#a98bff'},
-  concluido:       {nome:'RECEBIMENTO CONCLUÍDO', cor:'#2ecc8f'},
-  nao_compareceu:  {nome:'NO-SHOW',            cor:'#ff4d5e'},
+  agendado:        {nome:'AGENDADO',            cor:'var(--s-agendado)'},
+  apresentou:      {nome:'VEÍCULO SE APRESENTOU', cor:'var(--s-apresentou)'},
+  aguardando_doca: {nome:'AGUARDANDO DOCA',     cor:'var(--s-doca)'},
+  em_andamento:    {nome:'EM RECEBIMENTO',      cor:'var(--s-operacao)'},
+  concluido:       {nome:'RECEBIMENTO CONCLUÍDO', cor:'var(--s-concluido)'},
+  nao_compareceu:  {nome:'NO-SHOW',            cor:'var(--s-noshow)'},
 };
 const QUADROS = {
   rec: { titulo:'RECEBIMENTO', rotulo:'MANHÃ', verbo:'recebimento',
@@ -241,12 +246,15 @@ let MODO_ATUAL = '';
 function relogio(){
   const d = agoraSP();
   const h = parte(d,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).split(':');
-  $('#hora').innerHTML = h.map((x,i)=> (i?'<span class="sep">:</span>':'') + [...x].map(c=>`<span class="dig">${c}</span>`).join('')).join('');
+  const hr = $('#hora');
+  if (!hr.querySelector('.fl')) hr.innerHTML = Placas.html(2,h[0],'z-ck tnum') + '<span class="sep">:</span>' + Placas.html(2,h[1],'z-ck tnum') + Placas.html(2,h[2],'z-ck2 tnum');
+  const hf = hr.querySelectorAll('.fl'); Placas.troca(hf[0], h[0]); Placas.troca(hf[1], h[1]); Placas.troca(hf[2], h[2], 0, true);
   $('#d1').textContent = parte(d,{weekday:'long'});
   $('#d2').textContent = parte(d,{day:'2-digit',month:'long',year:'numeric'});
   document.querySelectorAll('[data-desde]').forEach(el=>{
     const ms = Date.now() - (+el.dataset.desde);
-    if (el.classList.contains('tmp')) el.innerHTML = tiles(mmss(ms),7,'t'); else el.textContent = mmss(ms);
+    if (el.classList.contains('tmp')){ const fl = el.querySelector('.fl'); if (fl) Placas.troca(fl, mmss(ms).padStart(7,' '), 0, true); else el.innerHTML = Placas.html(7, mmss(ms).padStart(7,' '), 'z-tm tnum'); }
+    else el.textContent = mmss(ms);
     const card = el.closest('.card,.row'); if (!card) return;
     const min = ms/60000;
     card.classList.toggle('critico', min >= CFG.criticoMin);
@@ -264,7 +272,7 @@ function montar(modo){
   const quadro = $('#quadro');
   if (ESTILO === 'painel'){
     quadro.style.gridTemplateColumns = '1fr'; PREV.clear();
-    quadro.innerHTML = `<div class="bd"><div class="bd-h"><span>STATUS</span><span>TRANSPORTADORA</span><span>CLIENTE</span><span>PLACA</span><span>DOCA</span><span>CHEGADA</span><span>TEMPO</span></div><div class="bd-b" data-b></div></div>`;
+    quadro.innerHTML = `<div class="bd"><div class="bd-h"><span>SITUAÇÃO</span><span>TRANSPORTADORA</span><span>CLIENTE</span><span>PLACA</span><span>DOCA</span><span>CHEGADA</span><span>TEMPO</span></div><div class="bd-b" data-b><div class="trilho"></div></div></div>`;
     desenhar(); return;
   }
   quadro.style.gridTemplateColumns = q.grid;
@@ -331,7 +339,7 @@ function desenhar(){
     else lista = lista.sort((a,b)=> (a.chegada||a.movido||'').localeCompare(b.chegada||b.movido||''));
     sec.querySelector('[data-n]').textContent = lista.length;
     const corpo = sec.querySelector('[data-b]');
-    corpo.innerHTML = lista.length ? lista.map(i=>cartao(i,k)).join('') : `<div class="vazio">— NENHUM —</div>`;
+    corpo.innerHTML = lista.length ? lista.map(i=>cartao(i,k)).join('') : (carregandoAinda() ? `<div class="vazio carregando">CARREGANDO…</div>` : `<div class="vazio">— NENHUM —</div>`);
     corpo.querySelectorAll('.card').forEach(c=>{ if(!CONHECIDOS.has(c.dataset.id) && CONHECIDOS.size) c.classList.add('novo'); });
   });
   itens.forEach(i=>CONHECIDOS.add(i.id+'-'+i.etapa));
@@ -344,6 +352,20 @@ const tiles = (txt, n, cls='') => {
   const t = String(txt||'').toUpperCase().slice(0,n).padEnd(n,' ');
   return `<span class="fl ${cls}">` + [...t].map((c,k)=>`<i style="--k:${k}">${c===' '?'&nbsp;':esc(c)}</i>`).join('') + '</span>';
 };
+const ICONE = {
+  agendado:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  apresentou:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M1 16V6h13v10M14 9h4l4 4v3h-8"/><circle cx="6" cy="17.5" r="2"/><circle cx="18" cy="17.5" r="2"/></svg>',
+  aguardando_doca:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>',
+  em_andamento:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 21V9l8-5 8 5v12"/><path d="M8 21v-7h8v7M8 17h8"/></svg>',
+  concluido:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="M4 12.5l5 5L20 6.5"/></svg>',
+  nao_compareceu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>',
+};
+const carregandoAinda = () => !DEMO && !ULTIMO_OK && !FALHA_DESDE && !(DADOS.itens||[]).length;
+const linhaPainel = id => `<div class="row" data-id="${esc(id)}">
+    <span class="cel"><span class="sts"></span></span>
+    <span class="cel">${Placas.html(26,'','z-tr')}</span><span class="cel">${Placas.html(32,'','z-cl')}</span>
+    <span class="cel">${Placas.html(7,'','z-pl tnum')}</span><span class="cel">${Placas.html(2,'','z-dk tnum')}</span>
+    <span class="cel">${Placas.html(5,'','z-hr tnum')}</span><span class="cel tmp">${Placas.html(7,'','z-tm tnum')}</span></div>`;
 function painel(modo, itens){
   const ordem = ['apresentou','aguardando_doca','em_andamento','agendado','nao_compareceu','concluido'];
   const rank = k => ordem.indexOf(k);
@@ -354,33 +376,53 @@ function painel(modo, itens){
   });
   const concl = lista.filter(i=>i.etapa==='concluido'), outros = lista.filter(i=>i.etapa!=='concluido');
   const vis = outros.concat(concl);
-  const nomeEtapa = {apresentou:'VEÍCULO SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',nao_compareceu:'NO-SHOW',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
-  const html = vis.map(i=>{
-    const k = i.etapa, cor = ETAPA[k].cor;
-    const sig = [k,i.transportadora,i.cliente,i.placa,i.doca,i.chegada].join('|');
-    const flip = PREV.get(i.id)!==sig ? 'flip' : '';
-    PREV.set(i.id, sig);
-    let tempo = '', desde = '';
+  const nomeEtapa = {apresentou:'SE APRESENTOU',aguardando_doca:'AGUARDANDO DOCA',em_andamento:modo==='rec'?'EM RECEBIMENTO':'EM EXPEDIÇÃO',agendado:'AGENDADO',nao_compareceu:'NO-SHOW',concluido:modo==='rec'?'CONCLUÍDO':'CONCLUÍDA'};
+  const corpo = document.querySelector('.bd-b'); if (!corpo) return;
+  const trilho = corpo.querySelector('.trilho');
+  const rh = 4.05 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const primeira = !trilho.children.length, vistos = new Set();
+  let vazio = corpo.querySelector('.vazio');
+  if (!vis.length){
+    if (!vazio){ corpo.insertAdjacentHTML('beforeend','<div class="vazio" style="position:absolute;inset:0;display:grid;place-items:center"></div>'); vazio = corpo.querySelector('.vazio'); }
+    vazio.textContent = carregandoAinda() ? 'CARREGANDO…' : (!ULTIMO_OK && FALHA_DESDE && !DEMO ? '— SEM DADOS: VEJA O AVISO ABAIXO —' : '— NENHUM VEÍCULO —'); vazio.classList.toggle('carregando', carregandoAinda());
+  } else if (vazio) vazio.remove();
+  vis.forEach((i,pos)=>{
+    const k = i.etapa, id = String(i.id);
+    let row = trilho.querySelector(`.row[data-id="${CSS.escape(id)}"]`);
+    if (!row){
+      const tmp = document.createElement('div'); tmp.innerHTML = linhaPainel(id); row = tmp.firstElementChild;
+      row.style.transform = `translateY(${pos*rh}px)`; if (!primeira) row.classList.add('entra');
+      trilho.appendChild(row);
+    }
+    row.style.transform = `translateY(${pos*rh}px)`;
+    row.classList.toggle('par', pos%2===1); row.classList.toggle('fim', k==='concluido');
+    const cross = /cross/i.test(i.operacao||''); row.classList.toggle('cross', cross);
+    // selo de situação (vira quando muda)
+    const sts = row.querySelector('.sts'), rot = k==='nao_compareceu'&&i.chegada ? 'NÃO CUMPRIDO' : nomeEtapa[k], ass = k+'|'+rot;
+    if (sts.dataset.a !== ass){
+      const poe = () => { sts.style.setProperty('--c', ETAPA[k].cor); sts.innerHTML = ICONE[k] + `<span>${esc(rot)}</span>`; sts.classList.toggle('pulsa', k==='apresentou'); };
+      if (sts.dataset.a){ sts.classList.remove('vira'); void sts.offsetWidth; sts.classList.add('vira'); setTimeout(poe, 320); } else poe();
+      sts.dataset.a = ass;
+    }
+    const fl = row.querySelectorAll('.fl'), d0 = primeira ? pos*70 : 0;
+    const cli = curto(i.cliente)||bonito(i.cliente);
+    Placas.troca(fl[0], bonito(i.transportadora)||'A DEFINIR', d0);
+    Placas.troca(fl[1], cli, d0+120);
+    Placas.troca(fl[2], i.placa, d0+200);
+    Placas.troca(fl[3], cross?'XD':(i.doca?('0'+i.doca).slice(-2):''), d0+240);
+    Placas.troca(fl[4], hhmm(i.chegada), d0+260);
+    // tempo: contando (pátio / em operação) ou duração final (concluído)
+    const tc = row.querySelector('.tmp'); let desde = '', tempo = '';
     if (k==='apresentou'||k==='aguardando_doca'){ const t0 = quando(i.chegada)||quando(i.movido); desde = t0?t0.getTime():Date.now(); }
     else if (k==='em_andamento'){ const t0 = quando(i.inicio)||quando(i.movido)||quando(i.chegada); desde = t0?t0.getTime():Date.now(); }
     else if (k==='concluido'){ const a=quando(i.chegada), b=quando(i.fim)||quando(i.movido); tempo = a&&b? dur(b-a):''; }
-    const tcell = desde ? `<span class="tmp" data-desde="${desde}"></span>` : `<span class="tmp">${tiles(tempo,7,'t '+flip)}</span>`;
-    const cli = curto(i.cliente)||bonito(i.cliente);
-    return `<div class="row ${k==='concluido'?'fim':''}" style="--c:${cor}">
-      <span class="stt">${k==='nao_compareceu'&&i.chegada?'NÃO CUMPRIDO':nomeEtapa[k]}</span>
-      ${tiles(bonito(i.transportadora)||'A DEFINIR',19,flip)}
-      ${tiles(cli,28,'m '+flip)}
-      ${tiles(i.placa,8,'p '+flip)}
-      ${tiles(/cross/i.test(i.operacao||'')?'XD':(i.doca?('0'+i.doca).slice(-2):''),2,'d '+flip)}
-      ${tiles(hhmm(i.chegada),5,'t '+flip)}
-      ${tcell}</div>`;
-  }).join('') ;
-  const corpo = document.querySelector('.bd-b'); if (!corpo) return;
-  const pos = corpo.scrollTop;   // mantém a posição da rolagem ao atualizar
-  corpo.innerHTML = html || '<div class="vazio">— NENHUM VEÍCULO —</div>';
-  corpo.scrollTop = pos;
+    if (desde){ tc.dataset.desde = desde; }
+    else { delete tc.dataset.desde; row.classList.remove('critico','atencao','ok'); Placas.troca(fl[5], tempo.padStart(7,' '), d0+280); }
+    vistos.add(id);
+  });
+  trilho.querySelectorAll('.row').forEach(r=>{ if (!vistos.has(r.dataset.id)) r.remove(); });
+  trilho.style.height = (vis.length*rh) + 'px';
 }
-
 function kpis(modo, itens){
   const n = k => itens.filter(i=>i.etapa===k).length;
   const concl = itens.filter(i=>i.etapa==='concluido');
@@ -392,25 +434,32 @@ function kpis(modo, itens){
     const total = itens.filter(i=>i.etapa!=='incorreto').length;
     const pc = v => total ? Math.round(100*v/total) : null;   // % sobre o total do dia
     t = [
-      ['TOTAL DO DIA', total, '', '#5b8cff'],
-      ['AGUARDANDO CHEGADA', n('agendado'), pc(n('agendado')), '#5b8cff'],
-      ['NO PÁTIO', n('apresentou')+n('aguardando_doca'), pc(n('apresentou')+n('aguardando_doca')), '#ffb020'],
-      ['EM RECEBIMENTO', n('em_andamento'), pc(n('em_andamento')), '#a98bff'],
-      ['CONCLUÍDOS', concl.length, pc(concl.length), '#2ecc8f'],
-      ['NO-SHOW', naoCump, pc(naoCump), naoCump? '#ff4d5e':'#8fa1cc'],
+      ['TOTAL DO DIA', total, '', 'var(--marca)'],
+      ['AGUARDANDO CHEGADA', n('agendado'), pc(n('agendado')), 'var(--s-agendado)'],
+      ['NO PÁTIO', n('apresentou')+n('aguardando_doca'), pc(n('apresentou')+n('aguardando_doca')), 'var(--s-apresentou)'],
+      ['EM RECEBIMENTO', n('em_andamento'), pc(n('em_andamento')), 'var(--s-operacao)'],
+      ['CONCLUÍDOS', concl.length, pc(concl.length), 'var(--s-concluido)'],
+      ['NO-SHOW', naoCump, pc(naoCump), naoCump? 'var(--s-noshow)':'var(--mut)'],
     ];
   } else {
     const total = itens.length, pc = v => total ? Math.round(100*v/total) : null;
     t = [
-      ['TOTAL DO DIA', total, '', '#5b8cff'],
-      ['SE APRESENTARAM', n('apresentou'), pc(n('apresentou')), '#ffb020'],
-      ['AGUARDANDO DOCA', n('aguardando_doca'), pc(n('aguardando_doca')), '#ff7a3d'],
-      ['EM EXPEDIÇÃO', n('em_andamento'), pc(n('em_andamento')), '#a98bff'],
-      ['CONCLUÍDAS', concl.length, pc(concl.length), '#2ecc8f'],
-      ['TEMPO MÉDIO', medio, '', '#5b8cff'],
+      ['TOTAL DO DIA', total, '', 'var(--marca)'],
+      ['SE APRESENTARAM', n('apresentou'), pc(n('apresentou')), 'var(--s-apresentou)'],
+      ['AGUARDANDO DOCA', n('aguardando_doca'), pc(n('aguardando_doca')), 'var(--s-doca)'],
+      ['EM EXPEDIÇÃO', n('em_andamento'), pc(n('em_andamento')), 'var(--s-operacao)'],
+      ['CONCLUÍDAS', concl.length, pc(concl.length), 'var(--s-concluido)'],
+      ['TEMPO MÉDIO', medio, '', 'var(--marca)'],
     ];
   }
-  $('#kpis').innerHTML = t.map(([r,v,s,c])=>`<div class="kpi" style="--c:${c}"><span class="r">${r}</span><span class="v tnum">${v}</span>${s===null||s===''?'':`<span class="p tnum">${s}<small>%</small></span>`}</div>`).join('');
+  const box = $('#kpis'), ass = t.map(([r,v])=>r+':'+String(v).length).join('|');
+  if (box.dataset.a !== ass){
+    box.dataset.a = ass;
+    box.innerHTML = t.map(([r,v,s,c])=>`<div class="kpi" style="--c:${c}"><span class="r">${r}</span><span class="v">${Placas.html(Math.max(2,String(v).length),'','z-kp tnum')}</span><span class="p tnum"></span></div>`).join('');
+  }
+  [...box.children].forEach((el,j)=>{ const [,v,s,c] = t[j]; el.style.setProperty('--c', c);
+    const fl = el.querySelector('.fl'); Placas.troca(fl, String(v).padStart(+fl.dataset.n,' '), j*60);
+    el.querySelector('.p').innerHTML = s===null||s==='' ? '' : `${s}<small>%</small>`; });
 }
 
 function rodape(modo, ){
@@ -510,17 +559,27 @@ const TXT_CHAMADA = {
   aguardando_doca: (q)=>`AGUARDANDO DOCA · ${q.verbo.toUpperCase()}`,
   em_andamento:    (q)=>q.verbo==='expedição' ? 'EM CARREGAMENTO · EXPEDIÇÃO' : 'EM DESCARGA · RECEBIMENTO',
 };
-/* frases curtas, só com o primeiro nome (equipe interna):
-   chegou  → "Jomed chegou, para a Semina."
-   em andamento → "Jomed, doca 3, descarregando a Semina." (Expedição: carregando) */
+/* frases curtas: primeiro nome da transportadora e 2 primeiros nomes do cliente (equipe interna):
+   chegou  → "Jomed chegou, para a Semina Industria."
+   em andamento → "Jomed, doca 3, descarregando a Semina Industria." (Expedição: carregando) */
 const primeiroNome2 = s => {
   const w = String(s||'').replace(/\b(LTDA|EIRELI|S\.?\/?A\.?|ME|EPP)\b\.?/gi,'').replace(/[.,]/g,' ').split(/\s+/).filter(Boolean);
   if (!w.length) return '';
   let n = w[0]; if (n.length <= 2 && w[1]) n += ' ' + w[1];
   return n.split(' ').map(x=>x.charAt(0).toUpperCase()+x.slice(1).toLowerCase()).join(' ');
 };
+/* cliente: os 2 primeiros nomes ("Comercial Hello"); "de", "da", "e"... não contam como nome.
+   vozClienteNomes no config.js muda a quantidade (0 = nome completo, sem LTDA/ME/EPP). */
+const nomeCliente = s => {
+  const lim = CFG.vozClienteNomes, con = /^(de|da|do|das|dos|e|em)$/i;
+  const w = String(s||'').replace(/\b(LTDA|EIRELI|S\.?\/?A\.?|ME|EPP)\b\.?/gi,'').replace(/[.,]/g,' ').replace(/&/g,' e ').split(/\s+/).filter(Boolean);
+  const out = []; let n = 0;
+  for (const x of w){ if (lim && n >= lim) break; out.push(x); if (!con.test(x) && x.length > 2) n++; }   // iniciais ("J A") não contam
+  while (out.length && con.test(out[out.length-1])) out.pop();
+  return out.map(x => con.test(x) ? x.toLowerCase() : x.charAt(0).toUpperCase()+x.slice(1).toLowerCase()).join(' ');
+};
 function fraseChamada(i){
-  const t = primeiroNome2(i.transportadora) || 'Transportadora', c = primeiroNome2(curto(i.cliente) || i.cliente);
+  const t = primeiroNome2(i.transportadora) || 'Transportadora', c = nomeCliente(curto(i.cliente) || i.cliente);
   const d = parseInt(i.doca, 10), doca = isNaN(d) ? '' : `doca ${d}`;
   const exp = i.funil === 'exp', cross = /cross/i.test(i.operacao || '');
   const para = c ? `, para a ${c}` : '';
@@ -583,6 +642,12 @@ async function ouvirManual(){
     if (!ETAPA[i.etapa]) return; chamar(i);
   }catch(e){}
 }
+/* chamada: nome em placas, centralizado; nomes longos ganham placas menores para não cortar */
+const centro = (txt, n) => { const t = [...String(txt||'')].slice(0,n).join(''); return ' '.repeat(Math.floor((n - t.length)/2)) + t; };
+function placasCentro(txt, nMin, wMax, largura, cls){
+  const n = Math.max(nMin, [...String(txt||'')].length), w = Math.min(wMax, largura/n - .14);
+  return Placas.html(n, '', cls + ' tnum', n > nMin ? `--w:${w.toFixed(2)}rem;--h:${(w*1.8).toFixed(2)}rem;--fs:${(w*1.46).toFixed(2)}rem` : '');
+}
 function proxima(){
   const i = FILA.shift(); const box = $('#chamada');
   if (!i){ EM_TELA=false; box.classList.remove('on'); return; }
@@ -591,13 +656,15 @@ function proxima(){
   const transp = bonito(i.transportadora).toUpperCase() || 'TRANSPORTADORA';
   const qt = i.qtd ? `${i.qtd} ${i.tipo==='Paletes'?'palete'+(+i.qtd===1?'':'s'):(+i.qtd===1?'volume':'volumes')}` : '';
   box.style.setProperty('--c', cor);
+  const cliCh = (curto(i.cliente)||bonito(i.cliente)).toUpperCase();
   box.innerHTML = `<div class="ch" style="--c:${cor}">
       <div class="e">${esc(TXT_CHAMADA[i.etapa](q))}</div>
-      <div class="tr">${esc(transp)}</div>
-      <div class="cl">${esc(curto(i.cliente)||bonito(i.cliente))}</div>
+      <div class="tr">${placasCentro(transp, 26, 3.35, 92, 'z-chT')}</div>
+      <div class="cl">${placasCentro(cliCh, 32, 2, 70, 'z-chC')}</div>
       <div class="ib">${/cross/i.test(i.operacao||'')?`<span class="cross">CROSSDOCKING</span>`:''}${i.doca&&i.etapa==='em_andamento'&&!/cross/i.test(i.operacao||'')?`<span class="doca">DOCA ${esc(i.doca)}</span>`:''}${i.placa?`<span>${esc(i.placa)}</span>`:''}${qt?`<span>${esc(qt)}</span>`:''}</div>
       ${FILA.length?`<div class="fila">+ ${FILA.length} na fila de chamada</div>`:''}</div>`;
   box.classList.add('on');
+  setTimeout(()=>{ const f = box.querySelectorAll('.ch .fl'); Placas.troca(f[0], centro(transp, +f[0].dataset.n)); Placas.troca(f[1], centro(cliCh, +f[1].dataset.n), 250); }, 200);
   campainha();
   const frase = fraseChamada(i);
   setTimeout(()=>falar(frase), 2400);

@@ -1,0 +1,88 @@
+/* =====================================================================
+   TEMA VISUAL — Controle de Pátio Vix Log · Direção A "Azul Operacional"
+   Só aparência: cores, fontes, placas (painel de aeroporto), selos de
+   situação e avisos. Nenhuma regra de negócio, som ou dado mora aqui.
+   Para mudar a cara do painel, mexa neste arquivo.
+   ===================================================================== */
+
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:block;src:url(fontes/barlow-condensed-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-display:block;src:url(fontes/barlow-condensed-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:800;font-display:block;src:url(fontes/barlow-condensed-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:Barlow;font-weight:500;font-display:swap;src:url(fontes/barlow-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Barlow;font-weight:600;font-display:swap;src:url(fontes/barlow-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:Barlow;font-weight:700;font-display:swap;src:url(fontes/barlow-latin-700-normal.woff2) format("woff2")}
+
+:root{
+  /* superfícies (azul-marinho derivado do logo #0A6BFA) */
+  --bg:#061229; --panel:#0a1a3a; --card:#11264f; --card2:#163061; --linha:#1d3464;
+  /* texto */
+  --txt:#f3f7ff; --mut:#93a7d2; --txt2:#c3d1f0;
+  /* marca */
+  --marca:#2e93ff; --marca-forte:#0a6bfa; --marca-escura:#0040d6;
+  /* situações (um sentido para cada cor) */
+  --s-agendado:#9db0d8;    /* aguardando chegada */
+  --s-apresentou:#ffb020;  /* veículo se apresentou */
+  --s-doca:#ff7a3d;        /* aguardando doca */
+  --s-operacao:#2e93ff;    /* em recebimento / em expedição (azul da marca) */
+  --s-concluido:#2fd08a;
+  --s-noshow:#ff4d5e;
+  --s-cross:#7fe3ff;       /* crossdocking (antes usava o roxo, que também era "em recebimento") */
+  --demo:#b79bff;
+  --sobre-cor:#061229;     /* texto escuro sobre faixa colorida */
+  /* placas (split-flap) */
+  --placa-cima:#1b3466; --placa-baixo:#142b59; --placa-dobra:rgba(0,0,0,.6);
+  /* fontes */
+  --f-placa:"Barlow Condensed","Arial Narrow","Segoe UI",sans-serif;
+  --f-titulo:"Barlow Condensed","Arial Narrow","Segoe UI",sans-serif;
+  --f-texto:Barlow,"Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:Consolas,"Courier New",monospace;
+
+  /* nomes antigos usados pelas páginas (apontam para o tema) */
+  --azul:var(--marca); --ambar:var(--s-apresentou); --laranja:var(--s-doca); --verde:var(--s-concluido); --verm:var(--s-noshow); --roxo:var(--demo);
+  --az:var(--marca); --am:var(--s-apresentou); --ok:var(--s-concluido); --vm:var(--s-noshow); --lar:var(--s-doca); --rox:var(--s-cross); --oc:var(--s-noshow);
+}
+
+body{background:var(--bg);color:var(--txt);font-family:var(--f-texto)}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- placas (painel de aeroporto) ----------
+   Cada letra é uma placa com metade de cima e de baixo. Ao mudar, a metade de
+   cima "cai" sobre a de baixo (placas.js). Tamanho por variável: --w, --h, --fs. */
+.fl{display:inline-flex;gap:var(--gp,.1rem);flex:none}
+.fl .t{position:relative;display:inline-block;width:var(--w,1.2rem);height:var(--h,2.6rem);flex:none;perspective:12rem;
+       font:700 var(--fs,2rem)/var(--h,2.6rem) var(--f-placa);color:var(--cc,var(--txt))}
+.fl .t b{position:absolute;left:0;right:0;height:50%;overflow:hidden;font-weight:inherit;backface-visibility:hidden}
+.fl .t b s{display:block;height:var(--h,2.6rem);line-height:var(--h,2.6rem);text-align:center;text-decoration:none}
+.fl .t .u,.fl .t .fu{top:0;background:var(--placa-cima);border-radius:.28rem .28rem 0 0}
+.fl .t .d,.fl .t .fd{top:50%;background:var(--placa-baixo);border-radius:0 0 .28rem .28rem}
+.fl .t .d s,.fl .t .fd s{margin-top:calc(var(--h,2.6rem) / -2)}
+.fl .t .fu{transform-origin:50% 100%;visibility:hidden}
+.fl .t .fd{transform-origin:50% 0;visibility:hidden}
+.fl .t::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--placa-dobra);z-index:3}
+/* celular / tela estreita: texto comum, sem placas */
+.fl.simples{display:inline;min-width:0;flex:0 1 auto;font:700 var(--fs-s,1.05rem)/1.2 var(--f-titulo);color:var(--cc,var(--txt));white-space:normal;overflow-wrap:anywhere}
+
+/* ---------- selo de situação ---------- */
+.sts{display:inline-flex;align-items:center;gap:.55rem;height:2.6rem;padding:0 .8rem;border-radius:.35rem;white-space:nowrap;
+     font:800 1.2rem/1.05 var(--f-titulo);letter-spacing:.06em;color:var(--c);
+     background:color-mix(in srgb,var(--c) 15%,transparent);border-left:.4rem solid var(--c);transform-origin:50% 50%}
+.sts svg{width:1.4rem;height:1.4rem;flex:none}
+.sts.pulsa::before{content:"";width:.65rem;height:.65rem;border-radius:50%;background:var(--c);flex:none;animation:tm-pulso 1.4s ease-in-out infinite}
+.sts.vira{animation:tm-vira .7s ease-in-out}
+@keyframes tm-pulso{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 70%,transparent)}50%{box-shadow:0 0 0 .45rem transparent}}
+@keyframes tm-vira{0%{transform:rotateX(0)}45%{transform:rotateX(90deg)}55%{transform:rotateX(-90deg)}100%{transform:rotateX(0)}}
+@keyframes tm-pisca{50%{opacity:.25}}
+@keyframes tm-entra{from{transform:perspective(70rem) rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- etiquetas ---------- */
+.tag-xd{font:800 .95rem/1 var(--f-texto);letter-spacing:.06em;color:var(--s-cross);border:2px solid var(--s-cross);padding:.25rem .4rem;border-radius:.3rem;white-space:nowrap}
+.tag-ontem{font:800 .95rem/1.05 var(--f-texto);letter-spacing:.05em;color:var(--sobre-cor);background:var(--s-noshow);padding:.3rem .45rem;border-radius:.25rem;white-space:nowrap}
+
+/* ---------- estados: carregando, erro, sem conexão ---------- */
+.aviso-erro{background:color-mix(in srgb,var(--s-noshow) 18%,var(--panel));border:2px solid var(--s-noshow);color:#ffd9dd;
+            font:600 1.1rem/1.3 var(--f-texto);border-radius:.6rem;padding:.6rem 1.2rem;box-shadow:0 .6rem 2rem rgba(0,0,0,.45)}
+.carregando{color:var(--mut);font:700 1.3rem var(--f-titulo);letter-spacing:.24em;animation:tm-pisca 1.6s ease-in-out infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .sts.pulsa::before,.sts.vira,.carregando{animation:none}
+}

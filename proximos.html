@@ -7,11 +7,12 @@
 <link rel="icon" href="icone-vixlog.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Pátio Vix Log">
+<link rel="stylesheet" href="tema.css">
 <style>
-  :root{--bg:#0a1226;--panel:#111b36;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--az:#5b8cff;--ok:#2ecc8f;--am:#ffb020;--vm:#ff4d5e}
+  /* cores e fontes vêm de tema.css */
   *{box-sizing:border-box;margin:0}
   html{font-size:16px} @media (min-width:1200px){html{font-size:calc(100vw / 120)}}
-  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1rem}
+  body{background:var(--bg);color:var(--txt);font-family:var(--f-texto);min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1rem}
   @media (min-width:1200px){body{height:100vh;overflow:hidden}}
   header{display:flex;align-items:center;gap:1.2rem;height:5rem;flex:none}
   header img{height:3.6rem} .sep{width:1px;align-self:stretch;margin:.8rem 0;background:var(--linha)}
@@ -30,10 +31,14 @@
   table{width:100%;border-collapse:collapse}
   th{font-size:.75rem;letter-spacing:.1em;color:var(--mut);font-weight:700;text-align:right;padding:.5rem 1.2rem .3rem}
   th:first-child,td:first-child{text-align:left}
-  td{font-size:1.25rem;padding:.4rem 1.2rem;border-top:1px solid rgba(39,57,107,.55);text-align:right;font-variant-numeric:tabular-nums}
+  td{font-size:1.25rem;padding:.4rem 1.2rem;border-top:1px solid color-mix(in srgb,var(--linha) 70%,transparent);text-align:right;font-variant-numeric:tabular-nums}
   td:first-child{font-weight:600} td.n{width:5.5rem} td.p{color:var(--ok);width:6.5rem;font-weight:700} td.v{color:var(--am);width:6.5rem;font-weight:700} td.z{color:var(--mut)}
   .sem{padding:.9rem 1.2rem;color:var(--mut);font-size:1.2rem}
-  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--vm);color:#ffb3bb;padding:.7rem 1rem;border-radius:.7rem;display:none;z-index:5}
+  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);display:none;z-index:5;max-width:92vw}
+  .tit strong{font-family:var(--f-titulo)}
+  .dh b{font-family:var(--f-titulo);font-size:1.8rem}
+  td{font-family:var(--f-titulo);font-size:1.4rem}
+  td:first-child{text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -43,7 +48,7 @@
   <div class="dt" id="sub"></div>
 </header>
 <main id="cols"></main>
-<div id="erro"></div>
+<div id="erro" class="aviso-erro"></div>
 <script src="config.js"></script>
 <script>
 /* Próximos agendamentos em lista: lê "proximos" do Worker e mostra os próximos N dias corridos (padrão 7; ?dias=3 muda).

@@ -7,11 +7,12 @@
 <link rel="icon" href="icone-vixlog.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Pátio Vix Log">
+<link rel="stylesheet" href="tema.css">
 <style>
-  :root{--bg:#070d1f;--panel:#0f1a38;--linha:#27396b;--txt:#eef2ff;--mut:#8fa1cc;--az:#5b8cff;--ok:#2ecc8f;--am:#ffb020;--vm:#ff4d5e;--lar:#ff7a3d;--rox:#a98bff}
+  /* cores e fontes vêm de tema.css */
   *{box-sizing:border-box;margin:0}
   html{font-size:16px} @media (min-width:1200px){html{font-size:calc(100vw / 120)}}
-  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1rem .8rem}
+  body{background:var(--bg);color:var(--txt);font-family:var(--f-texto);min-height:100vh;display:flex;flex-direction:column;padding:.8rem 1rem .8rem}
   @media (min-width:1200px){body{height:100vh;overflow:hidden}}
   header{display:flex;align-items:center;gap:1.2rem;height:5rem;flex:none}
   header img.lg{height:3.6rem} .sep{width:1px;align-self:stretch;margin:.8rem 0;background:var(--linha)}
@@ -19,7 +20,7 @@
   .tit strong{font-size:2.1rem;letter-spacing:.04em;font-weight:800}
   .abas{display:flex;gap:.5rem;margin-left:1.5rem}
   .abas button{background:var(--panel);color:var(--mut);border:1px solid var(--linha);border-radius:.6rem;padding:.55rem 1.2rem;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit}
-  .abas button.on{background:#14275a;color:#fff;border-color:var(--az)}
+  .abas button.on{background:var(--marca-forte);color:#fff;border-color:var(--marca)}
   .mes{margin-left:auto;display:flex;align-items:center;gap:.6rem;font-size:1.3rem;font-weight:700}
   .mes button{background:var(--panel);border:1px solid var(--linha);color:var(--txt);border-radius:.5rem;width:2.6rem;height:2.6rem;font-size:1.2rem;cursor:pointer}
   .mes button[disabled]{opacity:.35;cursor:default} .mes span{min-width:11rem;text-align:center;text-transform:capitalize}
@@ -37,22 +38,26 @@
   .w2{grid-column:span 3} .w1{grid-column:span 1} .w2b{grid-column:span 2}
   .dias{flex:1;display:flex;align-items:flex-end;gap:.35rem;min-height:0;padding-top:1.6rem}
   .dia{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
-  .dia .n{font-size:.95rem;font-weight:800;margin-bottom:.15rem} .dia .b{width:78%;background:linear-gradient(#4a6fe0,#27368f);border-radius:.25rem .25rem 0 0;min-height:2px}
-  .dia.fds .b{background:linear-gradient(#8aa0d8,#4a5a9a)} .dia.hj .b{background:linear-gradient(#2ecc8f,#17835a)}
+  .dia .n{font-size:.95rem;font-weight:800;margin-bottom:.15rem} .dia .b{width:78%;background:linear-gradient(var(--marca),var(--marca-escura));border-radius:.25rem .25rem 0 0;min-height:2px}
+  .dia.fds .b{background:linear-gradient(var(--s-agendado),var(--linha))} .dia.hj .b{background:linear-gradient(var(--s-concluido),color-mix(in srgb,var(--s-concluido) 55%,#000))}
   .dia .l{font-size:.78rem;color:var(--mut);margin-top:.3rem;text-align:center;line-height:1.1;white-space:nowrap}
   .pico{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.4rem}
   .pico .big{font-size:3.4rem;font-weight:800;color:var(--lar);line-height:1}
   .pico .k{font-size:1.9rem;font-weight:800} .pico .t{font-size:.9rem;color:var(--mut)} .pico .dd{font-size:2.4rem;font-weight:800;color:var(--lar)}
   .top{flex:1;display:flex;align-items:flex-end;gap:.7rem;min-height:0;padding-top:1.4rem}
   .top .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}
-  .top .n{font-weight:800;font-size:1.1rem;margin-bottom:.2rem} .top .b{width:70%;background:linear-gradient(#4a6fe0,#27368f);border-radius:.25rem .25rem 0 0}
-  .top .l{font-size:.78rem;color:#c5d2f5;text-align:center;margin-top:.35rem;line-height:1.15;height:3.6em;overflow:hidden;overflow-wrap:anywhere;text-transform:uppercase}
+  .top .n{font-weight:800;font-size:1.1rem;margin-bottom:.2rem} .top .b{width:70%;background:linear-gradient(var(--marca),var(--marca-escura));border-radius:.25rem .25rem 0 0}
+  .top .l{font-size:.78rem;color:var(--txt2);text-align:center;margin-top:.35rem;line-height:1.15;height:3.6em;overflow:hidden;overflow-wrap:anywhere;text-transform:uppercase}
   table{border-collapse:collapse;width:100%;font-size:1rem;flex:1}
-  th{background:#14275a;font-size:.9rem;padding:.3rem .4rem;font-weight:700} td{text-align:center;padding:.25rem .4rem;border:1px solid rgba(39,57,107,.6);font-weight:700}
-  td.sem,th.sem{text-align:left;color:var(--mut)} td.tot{background:#14275a} tr.ft td{background:#14275a}
+  th{background:var(--card2);font-size:.9rem;padding:.3rem .4rem;font-weight:700} td{text-align:center;padding:.25rem .4rem;border:1px solid color-mix(in srgb,var(--linha) 80%,transparent);font-weight:700}
+  td.sem,th.sem{text-align:left;color:var(--mut)} td.tot{background:var(--card2)} tr.ft td{background:var(--card2)}
   .vazio{margin:auto;color:var(--mut);font-size:1.1rem;opacity:.7}
-  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);background:#111c3c;border:1px solid var(--vm);color:#ffb3bb;padding:.7rem 1rem;border-radius:.7rem;display:none;max-width:92vw;z-index:5}
+  #erro{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);display:none;max-width:92vw;z-index:5}
   #carga{position:fixed;inset:0;display:grid;place-items:center;color:var(--mut);letter-spacing:.2em;background:var(--bg);z-index:4}
+  .tit strong{font-family:var(--f-titulo)}
+  .kpi .v,.pico .big,.pico .k,.pico .dd,.dia .n,.top .n{font-family:var(--f-titulo)}
+  .kpi{border-left:0;border-bottom:.3rem solid var(--c)}
+  .abas button{font-family:var(--f-texto)}
 </style>
 </head>
 <body>
@@ -65,7 +70,7 @@
   <div class="mes"><button id="ant" title="Mês anterior">◀</button><span id="mes">—</span><button id="prox" title="Próximo mês">▶</button></div>
 </header>
 <main id="m"></main>
-<div id="carga">CARREGANDO…</div><div id="erro"></div>
+<div id="carga" class="carregando">CARREGANDO…</div><div id="erro" class="aviso-erro"></div>
 <script src="config.js"></script>
 <script>
 /* ===== Painel Logístico KPIs — lê /kpi?mes=AAAA-MM do Worker e calcula tudo aqui ===== */

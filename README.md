@@ -104,3 +104,15 @@ Tela `proximos.html?t=SENHA`: lista simples (não é painel de aeroporto) com um
 - `docas.html?t=SENHA`: tela só de visualização com as 5 docas (livre/ocupada, transportadora, cliente, recebimento/expedição, tempo). Ocupada = card "em operação" com doca informada. `?docas=N` muda a quantidade.
 - Campo "Tipo da Operação" (Descarga | Crossdocking) do Bitrix24: o Worker acha a coluna pelo valor e envia `operacao`. Crossdocking não fala nem mostra doca (chip CROSSDOCKING, "XD" no painel aeroporto).
 - Expedição: "se apresentou" só aparece no painel; som e voz só em aguardando doca e em expedição (`chamarExp`). Recebimento mantém as três (`chamarRec`).
+
+## Visual (tema) — painel de aeroporto "Azul Operacional"
+A aparência fica separada da lógica:
+- `tema.css` — cores (azul da marca), fontes e componentes visuais. Para mudar a cara do painel, mexa só aqui.
+- `placas.js` — as letras que viram (placas do painel de aeroporto). Só desenha: não lê dados, não toca som.
+- `fontes/` — Barlow e Barlow Condensed salvas no próprio repositório (não depende de site externo; licença em `fontes/LICENSE-Barlow.txt`).
+- No celular (tela com menos de 1000 px) as placas viram texto comum, para caber.
+- Nomes longos: antes de cortar, as placas tiram LTDA/ME/EPP e abreviam palavras comuns (TRANSP., LOG., DISTRIB.…).
+
+## Voz
+A chamada fala o primeiro nome da transportadora e os **2 primeiros nomes do cliente** ("Jomed chegou, para a Comercial Hello."). "de", "da", "e" e iniciais não contam como nome.
+Para mudar: em `config.js`, `vozClienteNomes: 3` (ou `0` para o nome completo, sem LTDA/ME/EPP).
