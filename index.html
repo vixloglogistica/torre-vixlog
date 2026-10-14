@@ -606,7 +606,7 @@ const amanhaOk = () => CFG.amanhaHora > 0 && horaSP() >= CFG.amanhaHora && DADOS
 function kpiAbrir(manual, qual){
   if (KPI_ON) return; KPI_ON = true; KPI_MANUAL = !!manual;
   const f = $('#kpi'); qual = qual || 'kpi';
-  f.src = (qual==='amanha' ? 'amanha.html' : 'kpi.html') + '?embed'; f.style.display = 'block';
+  f.src = (qual==='amanha' ? 'amanha.html' : 'kpi.html') + '?embed' + (TOKEN ? '&t=' + encodeURIComponent(TOKEN) : ''); f.style.display = 'block';   // repassa a senha (não depende do navegador ter guardado)
   const seg = (qual==='amanha' ? CFG.amanhaSeg : CFG.kpiSeg) || 24, t = seg*1000/3;
   if (qual==='kpi') ['geral','rec','exp'].forEach((a,n)=>KPI_T.push(setTimeout(()=>{ try{ f.contentWindow.postMessage({aba:a},'*'); }catch(e){} }, 1500 + n*t)));
   if (!manual) KPI_T.push(setTimeout(kpiFechar, seg*1000));
