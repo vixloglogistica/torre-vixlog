@@ -5,5 +5,6 @@ window.TORRE_CONFIG = {
   api: 'https://torre-vixlog.vixlog.workers.dev',
   // intervalo: 20,
   viradaHora: 14,                 // até essa hora: Recebimento; a partir dela: Expedição
+  visual: 'painel',               // 'painel' = aeroporto (padrão); 'quadro' = kanban. A tecla V na TV alterna; ?visual=quadro no endereço também
   // chamar: ['apresentou'],      // etapas que tocam som: 'apresentou' | 'aguardando_doca' | 'em_andamento'
 };
