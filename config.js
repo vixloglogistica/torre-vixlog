@@ -6,5 +6,6 @@ window.TORRE_CONFIG = {
   // intervalo: 20,
   viradaHora: 14,                 // até essa hora: Recebimento; a partir dela: Expedição
   visual: 'painel',               // 'painel' = aeroporto (padrão); 'quadro' = kanban. A tecla V na TV alterna; ?visual=quadro no endereço também
+  voz: 'Francisca',               // voz da chamada (Edge: Microsoft Francisca Online Natural). ?voz=nome no endereço força outra
   // chamar: ['apresentou'],      // etapas que tocam som: 'apresentou' | 'aguardando_doca' | 'em_andamento'
 };
