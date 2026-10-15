@@ -540,15 +540,17 @@ function falar(txt, tentativa=0){
     if (speechSynthesis.paused) speechSynthesis.resume();
     const u = new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; u.rate=.92; u.volume=1;
     const lista = speechSynthesis.getVoices().filter(x=>/^pt/i.test(x.lang));
-    // 1ª tentativa: melhor voz; 2ª: voz local (offline), que não depende de internet; 3ª: padrão do sistema
-    let v = tentativa===0 ? VOZ : tentativa===1 ? (lista.find(x=>x.localService) || null) : null;
+    // 1ª e 2ª tentativas: a voz escolhida (Francisca online; a internet às vezes falha na 1ª);
+    // 3ª: voz local feminina (Maria), que não depende de internet; 4ª: padrão do sistema
+    const locais = lista.filter(x=>x.localService);
+    let v = tentativa<=1 ? VOZ : tentativa===2 ? (locais.find(x=>/maria|francisca|thalita|luciana|fernanda|vitoria/i.test(x.name)) || locais.find(x=>!/daniel|antonio|ant[oô]nio|duarte/i.test(x.name)) || locais[0] || null) : null;
     if (v) u.voice = v;
     window.__u = u;                                   // mantém referência (o Chrome/Edge descartam a fala se o objeto for coletado)
-    u.onerror = e => { FALA_ERR = e.error || 'erro'; diag('· tentativa '+(tentativa+1)); console.warn('voz:', FALA_ERR); if (tentativa < 2 && FALA_ERR !== 'canceled' && FALA_ERR !== 'interrupted') setTimeout(()=>falar(txt, tentativa+1), 300); };
+    u.onerror = e => { FALA_ERR = e.error || 'erro'; diag('· tentativa '+(tentativa+1)); console.warn('voz:', FALA_ERR); if (tentativa < 3 && FALA_ERR !== 'canceled' && FALA_ERR !== 'interrupted') setTimeout(()=>falar(txt, tentativa+1), tentativa===0 ? 700 : 300); };
     u.onstart = () => { FALA_ERR = ''; diag('· falando ✓'); };
     speechSynthesis.speak(u); diag('· tentativa '+(tentativa+1));
-    // se em 2,5 s não começou nem deu erro (voz online travada), tenta a próxima
-    setTimeout(()=>{ if (window.__u === u && !speechSynthesis.speaking && tentativa < 2 && !u.__ok) falar(txt, tentativa+1); }, 2500);
+    // se em 4 s não começou nem deu erro (voz online lenta/travada), tenta a próxima
+    setTimeout(()=>{ if (window.__u === u && !speechSynthesis.speaking && tentativa < 3 && !u.__ok) falar(txt, tentativa+1); }, 4000);
     u.addEventListener('start', ()=>{ u.__ok = true; });
   }catch(e){}
 }
